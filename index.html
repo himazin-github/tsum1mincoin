@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>ツムツム効率検証表</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body { font-family: "Helvetica Neue", Arial, sans-serif; padding: 10px; background: #fff; }
+        
+        .mobile-notice { 
+            background: #fff3cd; color: #856404; padding: 8px; border: 1px solid #ffeeba; 
+            border-radius: 4px; margin-bottom: 15px; font-size: 12px; font-weight: bold;
+        }
+
+        .input-section { margin-bottom: 15px; padding: 10px; border: 1px solid #000; background: #f9f9f9; }
+        .input-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; }
+        .input-group { display: flex; flex-direction: column; }
+        label { font-size: 11px; font-weight: bold; margin-bottom: 2px; }
+        input, select { padding: 4px; border: 1px solid #777; font-size: 13px; }
+        
+        #add-btn { padding: 5px 15px; background: #333; color: white; border: none; cursor: pointer; font-size: 13px; }
+        #download-btn { padding: 5px 15px; background: #28a745; color: white; border: none; cursor: pointer; font-size: 13px; }
+
+        /* テーブル設定：全体的にスリム化 */
+        .table-container { background: white; padding: 5px; display: inline-block; }
+        table { border-collapse: collapse; table-layout: fixed; width: 550px; } /* 全体幅を細く */
+        th, td { border: 1px solid #000; padding: 2px 4px; text-align: center; font-size: 13px; height: 42px; }
+        th { background: #e2e2e2; }
+
+        /* 各列の幅をさらに絞り込み */
+        .col-rank { width: 30px; }
+        .col-img { width: 50px; }
+        .col-name { 
+            width: 160px; /* ここをさらに細く */
+            text-align: left; padding-left: 5px; 
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .col-skill { width: 45px; }
+        .col-eff { width: 85px; text-align: right; padding-right: 5px; }
+        .col-item { width: 95px; font-size: 11px; } /* 文字が入り切るよう少しフォントを下げた */
+        .col-ctrl { width: 80px; }
+
+        .tsum-thumb { width: 38px; height: 38px; object-fit: contain; display: block; margin: auto; }
+        .move-btn { cursor: pointer; padding: 1px 3px; font-size: 11px; }
+    </style>
+</head>
+<body>
+
+    <div class="mobile-notice">
+        モバイルで表示が崩れる場合、ブラウザの設定からデスクトップモードにしてください
+    </div>
+
+    <div class="input-section">
+        <div class="input-row">
+            <div class="input-group">
+                <label>画像</label>
+                <input type="file" id="t-img" accept="image/*">
+            </div>
+            <div class="input-group">
+                <label>ツム名</label>
+                <input type="text" id="t-name" placeholder="ナミネ">
+            </div>
+            <div class="input-group">
+                <label>スキル</label>
+                <select id="t-skill">
+                    <option value="6">6</option><option value="5">5</option>
+                    <option value="4">4</option><option value="3">3</option>
+                    <option value="2">2</option><option value="1">1</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>毎分効率</label>
+                <input type="number" id="t-eff" placeholder="5000">
+            </div>
+            <div class="input-group">
+                <label>アイテム</label>
+                <select id="t-item">
+                    <option value="5-4 coin">5-4 coin</option>
+                    <option value="5-4 coin ボム">5-4 coin ボム</option>
+                    <option value="coin">coinのみ</option>
+                </select>
+            </div>
+            <button type="button" id="add-btn" onclick="addRow()">追加</button>
+            <button type="button" id="download-btn" onclick="downloadImage()">画像保存</button>
+        </div>
+    </div>
+
+    <div id="capture-area" class="table-container">
+        <table id="targetTable">
+            <thead>
+                <tr>
+                    <th class="col-rank">No</th>
+                    <th class="col-img">画像</th>
+                    <th class="col-name">ツム名</th>
+                    <th class="col-skill">SL</th>
+                    <th class="col-eff">効率/分</th>
+                    <th class="col-item">アイテム</th>
+                    <th class="col-ctrl" data-html2canvas-ignore>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+<script>
+    function addRow() {
+        const tableBody = document.querySelector("#targetTable tbody");
+        const name = document.getElementById("t-name").value;
+        const skill = document.getElementById("t-skill").value;
+        const eff = document.getElementById("t-eff").value;
+        const item = document.getElementById("t-item").value;
+        const fileInput = document.getElementById("t-img");
+
+        if (!name || !eff) {
+            alert("入力してね");
+            return;
+        }
+
+        const row = document.createElement("tr");
+
+        let imgHtml = "";
+        if (fileInput.files && fileInput.files[0]) {
+            const url = URL.createObjectURL(fileInput.files[0]);
+            imgHtml = `<img src="${url}" class="tsum-thumb">`;
+        }
+
+        row.innerHTML = `
+            <td class="rank-cell"></td>
+            <td>${imgHtml}</td>
+            <td class="col-name" title="${name}">${name}</td>
+            <td>${skill}</td>
+            <td class="col-eff">${Number(eff).toLocaleString()}</td>
+            <td>${item}</td>
+            <td data-html2canvas-ignore>
+                <button class="move-btn" onclick="moveRow(this, -1)">▲</button>
+                <button class="move-btn" onclick="moveRow(this, 1)">▼</button>
+                <button class="move-btn" style="color:red" onclick="deleteRow(this)">×</button>
+            </td>
+        `;
+
+        tableBody.appendChild(row);
+        updateTable();
+
+        document.getElementById("t-name").value = "";
+        document.getElementById("t-eff").value = "";
+        fileInput.value = "";
+    }
+
+    function moveRow(btn, direction) {
+        const row = btn.closest("tr");
+        const parent = row.parentNode;
+        if (direction === -1 && row.previousElementSibling) {
+            parent.insertBefore(row, row.previousElementSibling);
+        } else if (direction === 1 && row.nextElementSibling) {
+            parent.insertBefore(row.nextElementSibling, row);
+        }
+        updateTable();
+    }
+
+    function deleteRow(btn) {
+        btn.closest("tr").remove();
+        updateTable();
+    }
+
+    function updateTable() {
+        const rows = document.querySelectorAll("#targetTable tbody tr");
+        rows.forEach((row, index) => {
+            row.querySelector(".rank-cell").innerText = index + 1;
+        });
+    }
+
+    function downloadImage() {
+        const area = document.getElementById("capture-area");
+        html2canvas(area).then(canvas => {
+            const link = document.createElement("a");
+            link.download = "tsum-table.png";
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+        });
+    }
+</script>
+
+</body>
+</html>
