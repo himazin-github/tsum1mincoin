@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ツムツム効率計算</title>
+    <title>ツムツム効率計算・完全保存版</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root { --tsum-yellow: #ffcf00; --tsum-brown: #5d4037; --bg-color: #fff9c4; }
@@ -27,8 +27,10 @@
         #add-btn { background: #00a0e9; color: white; box-shadow: 0 3px 0 #0077b3; }
         #download-btn { background: #4caf50; color: white; box-shadow: 0 3px 0 #388e3c; }
         
-        .table-container { width: 100%; overflow-x: auto; margin-top: 10px; }
-        table { width: 100%; border-collapse: collapse; min-width: 440px; }
+        /* 表の表示設定：画面上ではスクロール可能にする */
+        .table-wrap { width: 100%; overflow-x: auto; margin-top: 10px; background: white; border-radius: 8px; }
+        #capture-area { display: inline-block; min-width: 100%; }
+        table { width: 100%; border-collapse: collapse; min-width: 440px; background: white; }
         th, td { border: 1px solid #ddd; padding: 6px 2px; text-align: center; font-size: 10px; }
         th { background: #f8f8f8; }
         .tsum-thumb { width: 40px; height: 40px; object-fit: cover; display: block; margin: auto; border-radius: 4px; }
@@ -47,56 +49,43 @@
             <label>プレイ回数</label>
             <select id="play-count-selector" onchange="generateEntryRows()"></select>
         </div>
-
         <div id="entries-container"></div>
 
-        <div class="info-row">
-            <label>アイテム設定</label>
+        <div class="info-row"><label>アイテム設定</label>
             <select id="t-item" onchange="autoCalc()">
                 <option value="2300" data-label="5-4+C">5→4 + Coin (2300)</option>
                 <option value="3800" data-label="5-4+C+B">5→4 + Coin + Bomb (3800)</option>
                 <option value="500" data-label="Coin">Coinのみ (500)</option>
             </select>
         </div>
-
-        <div class="info-row">
-            <label>ツム画像を選択</label>
-            <input type="file" id="t-img" accept="image/*">
-        </div>
-
-        <div class="info-row">
-            <label>ツム名</label>
-            <input type="text" id="t-name" placeholder="例：ナミネ">
-        </div>
-
-        <div class="info-row">
-            <label>スキルレベル (SL)</label>
-            <select id="t-skill">
-                <option value="6">6</option><option value="5">5</option><option value="4">4</option>
-                <option value="3">3</option><option value="2">2</option><option value="1">1</option>
-            </select>
+        <div class="info-row"><label>ツム画像</label><input type="file" id="t-img" accept="image/*"></div>
+        <div class="info-row"><label>ツム名</label><input type="text" id="t-name" placeholder="ナミネ"></div>
+        <div class="info-row"><label>スキルレベル (SL)</label>
+            <select id="t-skill"><option>6</option><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option></select>
         </div>
 
         <button id="add-btn">リストに保存</button>
-        <button id="download-btn">結果を画像で保存</button>
+        <button id="download-btn">表全体を画像で保存</button>
     </div>
 
-    <div id="capture-area" class="table-container">
-        <table id="targetTable">
-            <thead>
-                <tr>
-                    <th style="width:25px">No</th>
-                    <th style="width:45px">画像</th>
-                    <th>ツム名</th>
-                    <th style="width:25px">SL</th>
-                    <th style="width:50px">アイテム</th>
-                    <th style="width:40px">時間</th>
-                    <th style="width:65px">枚/分</th>
-                    <th data-html2canvas-ignore style="width:30px">消</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+    <div class="table-wrap">
+        <div id="capture-area">
+            <table id="targetTable">
+                <thead>
+                    <tr>
+                        <th style="width:25px">No</th>
+                        <th style="width:45px">画像</th>
+                        <th>ツム名</th>
+                        <th style="width:25px">SL</th>
+                        <th style="width:50px">アイテム</th>
+                        <th style="width:40px">時間</th>
+                        <th style="width:65px">枚/分</th>
+                        <th data-html2canvas-ignore style="width:30px">消</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -114,12 +103,7 @@
         for(let i=1; i<=count; i++) {
             const row = document.createElement('div');
             row.className = "entry-row";
-            row.innerHTML = `
-                <div class="entry-num">${i}</div>
-                <input type="number" class="c-coin" placeholder="コイン数" oninput="autoCalc()" style="flex:1.2;" inputmode="numeric">
-                <select class="c-min" onchange="autoCalc()">${genOptions(10,2)}分</select>
-                <select class="c-sec" onchange="autoCalc()">${genOptions(59,30)}秒</select>
-            `;
+            row.innerHTML = `<div class="entry-num">${i}</div><input type="number" class="c-coin" placeholder="コイン数" oninput="autoCalc()" style="flex:1.2;" inputmode="numeric"><select class="c-min" onchange="autoCalc()">${genOptions(10,2)}分</select><select class="c-sec" onchange="autoCalc()">${genOptions(59,30)}秒</select>`;
             entriesContainer.appendChild(row);
         }
         autoCalc();
@@ -154,8 +138,7 @@
         const res = autoCalc(); if(!res) return alert("コイン数を入力してね");
         const name = document.getElementById('t-name').value || "---";
         const sl = document.getElementById('t-skill').value;
-        const itemOption = document.getElementById('t-item').options[document.getElementById('t-item').selectedIndex];
-        const itemLabel = itemOption.getAttribute('data-label');
+        const itemLabel = document.getElementById('t-item').options[document.getElementById('t-item').selectedIndex].getAttribute('data-label');
         const imgFile = document.getElementById('t-img').files[0];
         const timeStr = `${Math.floor(res.avg/60)}:${(res.avg%60).toString().padStart(2,'0')}`;
 
@@ -178,21 +161,12 @@
         const data = JSON.parse(localStorage.getItem('tsumData') || '[]');
         data.forEach((d, i) => {
             const row = tableBody.insertRow();
-            row.innerHTML = `
-                <td>${i+1}</td>
-                <td>${d.imgData?`<img src="${d.imgData}" class="tsum-thumb">`:''}</td>
-                <td style="text-align:left; padding-left:3px;">${d.name}</td>
-                <td>${d.sl}</td>
-                <td style="font-size:8px;">${d.item}</td>
-                <td>${d.time}</td>
-                <td style="font-weight:bold">${d.eff.toLocaleString()}</td>
-                <td data-html2canvas-ignore><button class="delete-btn" onclick="deleteItem(${i})">✕</button></td>
-            `;
+            row.innerHTML = `<td>${i+1}</td><td>${d.imgData?`<img src="${d.imgData}" class="tsum-thumb">`:''}</td><td style="text-align:left; padding-left:3px;">${d.name}</td><td>${d.sl}</td><td style="font-size:8px;">${d.item}</td><td>${d.time}</td><td style="font-weight:bold">${d.eff.toLocaleString()}</td><td data-html2canvas-ignore><button class="delete-btn" onclick="deleteItem(${i})">✕</button></td>`;
         });
     }
 
     function deleteItem(i) {
-        if(confirm("この行を削除する？")) {
+        if(confirm("消す？")) {
             const data = JSON.parse(localStorage.getItem('tsumData') || '[]');
             data.splice(i, 1);
             localStorage.setItem('tsumData', JSON.stringify(data));
@@ -200,15 +174,33 @@
         }
     }
 
-    generateEntryRows();
-    renderTable();
-
+    // 保存ボタンの処理を強化
     document.getElementById('download-btn').addEventListener('click', () => {
-        html2canvas(document.querySelector("#capture-area")).then(canvas => {
+        const target = document.getElementById('capture-area');
+        
+        // 保存時だけ一時的にスタイルを変更して見切れを防ぐ
+        const originalStyle = target.style.cssText;
+        target.style.width = "auto";
+        target.style.overflow = "visible";
+        target.style.display = "block";
+
+        html2canvas(target, {
+            useCORS: true,
+            scale: 2, // 高画質
+            backgroundColor: "#ffffff",
+            width: target.scrollWidth, // 全体の幅
+            height: target.scrollHeight // 全体の高さ
+        }).then(canvas => {
+            target.style.cssText = originalStyle; // 元に戻す
             const link = document.createElement('a');
-            link.download = 'tsum-efficiency.png'; link.href = canvas.toDataURL(); link.click();
+            link.download = 'tsum-data.png';
+            link.href = canvas.toDataURL("image/png");
+            link.click();
         });
     });
+
+    generateEntryRows();
+    renderTable();
 </script>
 
 </body>
