@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ツムツム効率計算</title>
+    <title>ツムツム効率計算・ハミングフォント版</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700&display=swap" rel="stylesheet">
     <style>
         :root { --tsum-yellow: #ffcf00; --tsum-brown: #5d4037; --bg-color: #fff9c4; }
         
-        /* フォントの指定 */
         body { 
             font-family: "FOT-ハミング Std E", "Humming Std E", "M PLUS Rounded 1c", sans-serif; 
             background: var(--bg-color); 
@@ -55,7 +54,7 @@
         
         .table-wrap { width: 100%; overflow-x: auto; margin-top: 10px; background: white; border-radius: 8px; }
         #capture-area { display: inline-block; min-width: 100%; padding: 10px; background: white; }
-        table { width: 100%; border-collapse: collapse; min-width: 480px; background: white; border: 2px solid var(--tsum-brown); }
+        table { width: 100%; border-collapse: collapse; min-width: 400px; background: white; border: 2px solid var(--tsum-brown); }
         th, td { border: 1px solid #ddd; padding: 6px 2px; text-align: center; font-size: 11px; font-weight: bold; }
         th { background: var(--tsum-yellow); color: var(--tsum-brown); border-bottom: 2px solid var(--tsum-brown); }
         .tsum-thumb { width: 40px; height: 40px; object-fit: cover; display: block; margin: auto; border-radius: 5px; border: 1px solid #eee; }
@@ -106,8 +105,7 @@
                         <th>ツム名</th>
                         <th style="width:25px">SL</th>
                         <th style="width:50px">アイテム</th>
-                        <th style="width:40px">時間</th>
-                        <th style="width:65px">枚/分</th>
+                        <th style="width:80px">枚/分</th>
                         <th data-html2canvas-ignore style="width:80px">操作</th>
                     </tr>
                 </thead>
@@ -157,7 +155,7 @@
         if (cnt > 0 && time > 0) {
             const eff = Math.round(profit / time * 60);
             document.getElementById('calc-result').innerText = eff.toLocaleString();
-            return { eff, avg: Math.round(time / cnt) };
+            return { eff };
         }
         document.getElementById('calc-result').innerText = "0"; return null;
     }
@@ -168,11 +166,10 @@
         const sl = document.getElementById('t-skill').value;
         const itemLabel = document.getElementById('t-item').options[document.getElementById('t-item').selectedIndex].getAttribute('data-label');
         const imgFile = document.getElementById('t-img').files[0];
-        const timeStr = `${Math.floor(res.avg/60)}:${(res.avg%60).toString().padStart(2,'0')}`;
 
         const save = (imgData) => {
             const data = JSON.parse(localStorage.getItem('tsumData') || '[]');
-            data.push({ name, sl, item: itemLabel, time: timeStr, eff: res.eff, imgData });
+            data.push({ name, sl, item: itemLabel, eff: res.eff, imgData });
             localStorage.setItem('tsumData', JSON.stringify(data));
             renderTable();
         };
@@ -195,7 +192,6 @@
                 <td style="text-align:left; padding-left:3px;">${d.name}</td>
                 <td>${d.sl}</td>
                 <td style="font-size:8px;">${d.item}</td>
-                <td>${d.time}</td>
                 <td style="font-weight:bold">${d.eff.toLocaleString()}</td>
                 <td data-html2canvas-ignore>
                     <button class="op-btn" onclick="moveItem(${i}, -1)">▲</button>
