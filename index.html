@@ -3,38 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ツムツム効率計算・完全保存版</title>
+    <title>ツムツム効率計算</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700&display=swap" rel="stylesheet">
     <style>
         :root { --tsum-yellow: #ffcf00; --tsum-brown: #5d4037; --bg-color: #fff9c4; }
-        body { font-family: sans-serif; background: var(--bg-color); color: var(--tsum-brown); margin: 0; padding: 5px; display: flex; flex-direction: column; align-items: center; }
+        
+        /* フォントの指定 */
+        body { 
+            font-family: "FOT-ハミング Std E", "Humming Std E", "M PLUS Rounded 1c", sans-serif; 
+            background: var(--bg-color); 
+            color: var(--tsum-brown); 
+            margin: 0; 
+            padding: 5px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            -webkit-font-smoothing: antialiased;
+        }
+
         .main-container { width: 100%; max-width: 450px; background: white; border-radius: 15px; padding: 10px; box-sizing: border-box; }
         
-        .calc-header { background: var(--tsum-yellow); padding: 8px; border-radius: 10px; text-align: center; margin-bottom: 8px; font-weight: bold; }
-        .input-card { background: #fffef0; border: 1px solid #eee; border-radius: 12px; padding: 10px; margin-bottom: 10px; }
+        .calc-header { background: var(--tsum-yellow); padding: 8px; border-radius: 10px; text-align: center; margin-bottom: 8px; font-weight: bold; border: 2px solid var(--tsum-brown); }
+        .input-card { background: #fffef0; border: 2px solid #eee; border-radius: 12px; padding: 10px; margin-bottom: 10px; }
         
-        .play-selector { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid var(--tsum-yellow); }
+        .play-selector { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid var(--tsum-yellow); }
         
         #entries-container { max-height: 180px; overflow-y: auto; margin-bottom: 10px; border: 1px solid #f0f0f0; border-radius: 8px; background: #fff; }
         .entry-row { display: flex; align-items: center; gap: 5px; padding: 4px; border-bottom: 1px solid #eee; }
         .entry-num { font-size: 10px; width: 15px; text-align: center; color: #999; }
-        input[type="number"], input[type="text"], select { padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box; }
+        
+        input[type="number"], input[type="text"], select { 
+            font-family: inherit;
+            padding: 8px; 
+            border: 2px solid #ddd; 
+            border-radius: 8px; 
+            font-size: 14px; 
+            box-sizing: border-box; 
+        }
 
         .info-row { margin-bottom: 10px; display: flex; flex-direction: column; }
         .info-row label { font-size: 11px; font-weight: bold; margin-bottom: 4px; color: #8d6e63; }
         
-        button { width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; font-size: 15px; }
-        #add-btn { background: #00a0e9; color: white; box-shadow: 0 3px 0 #0077b3; }
-        #download-btn { background: #4caf50; color: white; box-shadow: 0 3px 0 #388e3c; }
+        button { 
+            font-family: inherit;
+            width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; font-size: 15px; 
+        }
+        #add-btn { background: #00a0e9; color: white; box-shadow: 0 4px 0 #0077b3; }
+        #sort-btn { background: #f39c12; color: white; box-shadow: 0 4px 0 #d35400; margin-bottom: 5px; }
+        #download-btn { background: #4caf50; color: white; box-shadow: 0 4px 0 #388e3c; }
         
-        /* 表の表示設定：画面上ではスクロール可能にする */
         .table-wrap { width: 100%; overflow-x: auto; margin-top: 10px; background: white; border-radius: 8px; }
-        #capture-area { display: inline-block; min-width: 100%; }
-        table { width: 100%; border-collapse: collapse; min-width: 440px; background: white; }
-        th, td { border: 1px solid #ddd; padding: 6px 2px; text-align: center; font-size: 10px; }
-        th { background: #f8f8f8; }
-        .tsum-thumb { width: 40px; height: 40px; object-fit: cover; display: block; margin: auto; border-radius: 4px; }
-        .delete-btn { padding: 4px 6px; background: #ff5252; color: white; border: none; border-radius: 4px; font-size: 9px; cursor: pointer; }
+        #capture-area { display: inline-block; min-width: 100%; padding: 10px; background: white; }
+        table { width: 100%; border-collapse: collapse; min-width: 480px; background: white; border: 2px solid var(--tsum-brown); }
+        th, td { border: 1px solid #ddd; padding: 6px 2px; text-align: center; font-size: 11px; font-weight: bold; }
+        th { background: var(--tsum-yellow); color: var(--tsum-brown); border-bottom: 2px solid var(--tsum-brown); }
+        .tsum-thumb { width: 40px; height: 40px; object-fit: cover; display: block; margin: auto; border-radius: 5px; border: 1px solid #eee; }
+        
+        .op-btn { font-family: inherit; padding: 2px 5px; border: 1px solid #ccc; border-radius: 4px; background: #f9f9f9; font-size: 10px; cursor: pointer; margin: 0 1px; }
+        .delete-btn { background: #ff5252; color: white; border: none; }
     </style>
 </head>
 <body>
@@ -65,6 +92,7 @@
         </div>
 
         <button id="add-btn">リストに保存</button>
+        <button id="sort-btn">効率が高い順に並び替え</button>
         <button id="download-btn">表全体を画像で保存</button>
     </div>
 
@@ -80,7 +108,7 @@
                         <th style="width:50px">アイテム</th>
                         <th style="width:40px">時間</th>
                         <th style="width:65px">枚/分</th>
-                        <th data-html2canvas-ignore style="width:30px">消</th>
+                        <th data-html2canvas-ignore style="width:80px">操作</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -103,7 +131,7 @@
         for(let i=1; i<=count; i++) {
             const row = document.createElement('div');
             row.className = "entry-row";
-            row.innerHTML = `<div class="entry-num">${i}</div><input type="number" class="c-coin" placeholder="コイン数" oninput="autoCalc()" style="flex:1.2;" inputmode="numeric"><select class="c-min" onchange="autoCalc()">${genOptions(10,2)}分</select><select class="c-sec" onchange="autoCalc()">${genOptions(59,30)}秒</select>`;
+            row.innerHTML = `<div class="entry-num">${i}</div><input type="number" class="c-coin" placeholder="枚数" oninput="autoCalc()" style="flex:1.2;" inputmode="numeric"><select class="c-min" onchange="autoCalc()">${genOptions(10,2)}分</select><select class="c-sec" onchange="autoCalc()">${genOptions(59,30)}秒</select>`;
             entriesContainer.appendChild(row);
         }
         autoCalc();
@@ -161,8 +189,33 @@
         const data = JSON.parse(localStorage.getItem('tsumData') || '[]');
         data.forEach((d, i) => {
             const row = tableBody.insertRow();
-            row.innerHTML = `<td>${i+1}</td><td>${d.imgData?`<img src="${d.imgData}" class="tsum-thumb">`:''}</td><td style="text-align:left; padding-left:3px;">${d.name}</td><td>${d.sl}</td><td style="font-size:8px;">${d.item}</td><td>${d.time}</td><td style="font-weight:bold">${d.eff.toLocaleString()}</td><td data-html2canvas-ignore><button class="delete-btn" onclick="deleteItem(${i})">✕</button></td>`;
+            row.innerHTML = `
+                <td>${i+1}</td>
+                <td>${d.imgData?`<img src="${d.imgData}" class="tsum-thumb">`:''}</td>
+                <td style="text-align:left; padding-left:3px;">${d.name}</td>
+                <td>${d.sl}</td>
+                <td style="font-size:8px;">${d.item}</td>
+                <td>${d.time}</td>
+                <td style="font-weight:bold">${d.eff.toLocaleString()}</td>
+                <td data-html2canvas-ignore>
+                    <button class="op-btn" onclick="moveItem(${i}, -1)">▲</button>
+                    <button class="op-btn" onclick="moveItem(${i}, 1)">▼</button>
+                    <button class="op-btn delete-btn" onclick="deleteItem(${i})">✕</button>
+                </td>
+            `;
         });
+    }
+
+    function moveItem(index, direction) {
+        const data = JSON.parse(localStorage.getItem('tsumData') || '[]');
+        const newIndex = index + direction;
+        if (newIndex >= 0 && newIndex < data.length) {
+            const temp = data[index];
+            data[index] = data[newIndex];
+            data[newIndex] = temp;
+            localStorage.setItem('tsumData', JSON.stringify(data));
+            renderTable();
+        }
     }
 
     function deleteItem(i) {
@@ -174,11 +227,15 @@
         }
     }
 
-    // 保存ボタンの処理を強化
+    document.getElementById('sort-btn').addEventListener('click', () => {
+        const data = JSON.parse(localStorage.getItem('tsumData') || '[]');
+        data.sort((a, b) => b.eff - a.eff);
+        localStorage.setItem('tsumData', JSON.stringify(data));
+        renderTable();
+    });
+
     document.getElementById('download-btn').addEventListener('click', () => {
         const target = document.getElementById('capture-area');
-        
-        // 保存時だけ一時的にスタイルを変更して見切れを防ぐ
         const originalStyle = target.style.cssText;
         target.style.width = "auto";
         target.style.overflow = "visible";
@@ -186,14 +243,14 @@
 
         html2canvas(target, {
             useCORS: true,
-            scale: 2, // 高画質
+            scale: 2,
             backgroundColor: "#ffffff",
-            width: target.scrollWidth, // 全体の幅
-            height: target.scrollHeight // 全体の高さ
+            width: target.scrollWidth,
+            height: target.scrollHeight
         }).then(canvas => {
-            target.style.cssText = originalStyle; // 元に戻す
+            target.style.cssText = originalStyle;
             const link = document.createElement('a');
-            link.download = 'tsum-data.png';
+            link.download = 'tsum-ranking.png';
             link.href = canvas.toDataURL("image/png");
             link.click();
         });
