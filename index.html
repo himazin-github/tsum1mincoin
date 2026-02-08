@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ツムツム効率計算・ハミングフォント版</title>
+    <title>ツムツム効率計算・表記作成ツール</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700&display=swap" rel="stylesheet">
     <style>
@@ -85,7 +85,7 @@
             </select>
         </div>
         <div class="info-row"><label>ツム画像</label><input type="file" id="t-img" accept="image/*"></div>
-        <div class="info-row"><label>ツム名</label><input type="text" id="t-name" placeholder="ナミネ"></div>
+        <div class="info-row"><label>ツム名</label><input type="text" id="t-name"></div>
         <div class="info-row"><label>スキルレベル (SL)</label>
             <select id="t-skill"><option>6</option><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option></select>
         </div>
@@ -215,7 +215,7 @@
     }
 
     function deleteItem(i) {
-        if(confirm("消す？")) {
+        if(confirm("消す💩？")) {
             const data = JSON.parse(localStorage.getItem('tsumData') || '[]');
             data.splice(i, 1);
             localStorage.setItem('tsumData', JSON.stringify(data));
