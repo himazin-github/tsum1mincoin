@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+    <meta name="google-site-verification" content="Rd1OrloK7WFvBG8CAwRfMzmD6e7EYWiWc36kF5fieKY" />
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ツムツム効率計算・表記作成ツール</title>
@@ -64,7 +66,6 @@
     </style>
 </head>
 <body>
-
 <div class="main-container">
     <div class="calc-header">
         平均効率: <span id="calc-result">0</span> 枚/分
@@ -215,7 +216,7 @@
     }
 
     function deleteItem(i) {
-        if(confirm("消す💩？")) {
+        if(confirm("消す？")) {
             const data = JSON.parse(localStorage.getItem('tsumData') || '[]');
             data.splice(i, 1);
             localStorage.setItem('tsumData', JSON.stringify(data));
