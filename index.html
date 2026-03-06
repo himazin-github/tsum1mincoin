@@ -164,23 +164,53 @@
         document.getElementById('calc-result').innerText = "0"; return null;
     }
 
+    function resizeImage(file, callback) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = 64;
+                canvas.height = 64;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, 64, 64);
+                callback(canvas.toDataURL('image/jpeg', 0.8));
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
     document.getElementById('add-btn').addEventListener('click', () => {
         const res = autoCalc(); if(!res) return alert("コイン数を入力してね");
+        
         const coins = document.querySelectorAll('.c-coin');
         let totalCoins = 0, count = 0;
         coins.forEach(input => { if(input.value) { totalCoins += parseFloat(input.value); count++; } });
         const avgCoins = count > 0 ? Math.round(totalCoins / count) : 0;
+
         const name = document.getElementById('t-name').value || "---";
         const sl = document.getElementById('t-skill').value;
         const itemLabel = document.getElementById('t-item').options[document.getElementById('t-item').selectedIndex].getAttribute('data-label');
         const imgFile = document.getElementById('t-img').files[0];
+
         const save = (imgData) => {
-            const data = JSON.parse(localStorage.getItem('tsumData') || '[]');
-            data.push({ name, sl, item: itemLabel, eff: res.eff, avgCoins, imgData });
-            localStorage.setItem('tsumData', JSON.stringify(data));
-            renderTable();
+            try {
+                const data = JSON.parse(localStorage.getItem('tsumData') || '[]');
+                data.push({ name, sl, item: itemLabel, eff: res.eff, avgCoins, imgData });
+                localStorage.setItem('tsumData', JSON.stringify(data));
+                renderTable();
+                alert("リストに保存したよ");
+            } catch (e) {
+                alert("容量がいっぱい！古いデータを消してね。");
+            }
         };
-        if (imgFile) { const reader = new FileReader(); reader.onload = (e) => save(e.target.result); reader.readAsDataURL(imgFile); } else { save(null); }
+
+        if (imgFile) {
+            resizeImage(imgFile, save);
+        } else {
+            save(null);
+        }
     });
 
     function renderTable() {
