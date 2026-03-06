@@ -2,7 +2,6 @@
 <html lang="ja">
 <head>
     <meta name="google-site-verification" content="Rd1OrloK7WFvBG8CAwRfMzmD6e7EYWiWc36kF5fieKY" />
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ツムツム効率計算・表記作成ツール</title>
@@ -54,18 +53,21 @@
         #sort-btn { background: #f39c12; color: white; box-shadow: 0 4px 0 #d35400; margin-bottom: 5px; }
         #download-btn { background: #4caf50; color: white; box-shadow: 0 4px 0 #388e3c; }
         
-        .table-wrap { width: 100%; overflow-x: auto; margin-top: 10px; background: white; border-radius: 8px; }
-        #capture-area { display: inline-block; min-width: 100%; padding: 10px; background: white; }
-        table { width: 100%; border-collapse: collapse; min-width: 400px; background: white; border: 2px solid var(--tsum-brown); }
-        th, td { border: 1px solid #ddd; padding: 6px 2px; text-align: center; font-size: 11px; font-weight: bold; }
-        th { background: var(--tsum-yellow); color: var(--tsum-brown); border-bottom: 2px solid var(--tsum-brown); }
-        .tsum-thumb { width: 40px; height: 40px; object-fit: cover; display: block; margin: auto; border-radius: 5px; border: 1px solid #eee; }
+        .table-wrap { width: 100%; overflow-x: auto; margin-top: 10px; }
+        #capture-area { padding: 10px; background: white; display: inline-block; width: 100%; box-sizing: border-box; }
         
-        .op-btn { font-family: inherit; padding: 2px 5px; border: 1px solid #ccc; border-radius: 4px; background: #f9f9f9; font-size: 10px; cursor: pointer; margin: 0 1px; }
-        .delete-btn { background: #ff5252; color: white; border: none; }
+        table { width: 100%; border-collapse: collapse; background: white; border: 2px solid var(--tsum-brown); }
+        th, td { border: 1px solid #ddd; padding: 6px 2px; text-align: center; font-size: 10px; font-weight: bold; }
+        th { background: var(--tsum-yellow); color: var(--tsum-brown); border-bottom: 2px solid var(--tsum-brown); }
+        .tsum-thumb { width: 35px; height: 35px; object-fit: cover; display: block; margin: auto; border-radius: 5px; border: 1px solid #eee; }
+        
+        .op-container { display: flex; justify-content: center; gap: 2px; margin-top: 5px; }
+        .op-btn { font-family: inherit; padding: 4px 6px; border: 1px solid #ccc; border-radius: 4px; background: #fff; font-size: 10px; cursor: pointer; }
+        .delete-btn { background: #ffebee; color: #d32f2f; border: 1px solid #ffcdd2; }
     </style>
 </head>
 <body>
+
 <div class="main-container">
     <div class="calc-header">
         平均効率: <span id="calc-result">0</span> 枚/分
@@ -83,6 +85,7 @@
                 <option value="2300" data-label="5-4+C">5→4 + Coin (2300)</option>
                 <option value="3800" data-label="5-4+C+B">5→4 + Coin + Bomb (3800)</option>
                 <option value="500" data-label="Coin">Coinのみ (500)</option>
+                <option value="2000" data-label="C+Time">Coin + Time (2000)</option>
             </select>
         </div>
         <div class="info-row"><label>ツム画像</label><input type="file" id="t-img" accept="image/*"></div>
@@ -101,13 +104,13 @@
             <table id="targetTable">
                 <thead>
                     <tr>
-                        <th style="width:25px">No</th>
-                        <th style="width:45px">画像</th>
+                        <th style="width:20px">No</th>
+                        <th style="width:40px">画像</th>
                         <th>ツム名</th>
-                        <th style="width:25px">SL</th>
+                        <th style="width:20px">SL</th>
                         <th style="width:50px">アイテム</th>
-                        <th style="width:80px">枚/分</th>
-                        <th data-html2canvas-ignore style="width:80px">操作</th>
+                        <th style="width:50px">枚/分</th>
+                        <th style="width:50px">平均枚数</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -163,23 +166,21 @@
 
     document.getElementById('add-btn').addEventListener('click', () => {
         const res = autoCalc(); if(!res) return alert("コイン数を入力してね");
+        const coins = document.querySelectorAll('.c-coin');
+        let totalCoins = 0, count = 0;
+        coins.forEach(input => { if(input.value) { totalCoins += parseFloat(input.value); count++; } });
+        const avgCoins = count > 0 ? Math.round(totalCoins / count) : 0;
         const name = document.getElementById('t-name').value || "---";
         const sl = document.getElementById('t-skill').value;
         const itemLabel = document.getElementById('t-item').options[document.getElementById('t-item').selectedIndex].getAttribute('data-label');
         const imgFile = document.getElementById('t-img').files[0];
-
         const save = (imgData) => {
             const data = JSON.parse(localStorage.getItem('tsumData') || '[]');
-            data.push({ name, sl, item: itemLabel, eff: res.eff, imgData });
+            data.push({ name, sl, item: itemLabel, eff: res.eff, avgCoins, imgData });
             localStorage.setItem('tsumData', JSON.stringify(data));
             renderTable();
         };
-
-        if (imgFile) {
-            const reader = new FileReader();
-            reader.onload = (e) => save(e.target.result);
-            reader.readAsDataURL(imgFile);
-        } else { save(null); }
+        if (imgFile) { const reader = new FileReader(); reader.onload = (e) => save(e.target.result); reader.readAsDataURL(imgFile); } else { save(null); }
     });
 
     function renderTable() {
@@ -190,15 +191,17 @@
             row.innerHTML = `
                 <td>${i+1}</td>
                 <td>${d.imgData?`<img src="${d.imgData}" class="tsum-thumb">`:''}</td>
-                <td style="text-align:left; padding-left:3px;">${d.name}</td>
+                <td style="text-align:left; padding-left:3px;">${d.name}<br>
+                    <div class="op-container">
+                        <button class="op-btn" onclick="moveItem(${i}, -1)">▲</button>
+                        <button class="op-btn" onclick="moveItem(${i}, 1)">▼</button>
+                        <button class="op-btn delete-btn" onclick="deleteItem(${i})">✕</button>
+                    </div>
+                </td>
                 <td>${d.sl}</td>
                 <td style="font-size:8px;">${d.item}</td>
                 <td style="font-weight:bold">${d.eff.toLocaleString()}</td>
-                <td data-html2canvas-ignore>
-                    <button class="op-btn" onclick="moveItem(${i}, -1)">▲</button>
-                    <button class="op-btn" onclick="moveItem(${i}, 1)">▼</button>
-                    <button class="op-btn delete-btn" onclick="deleteItem(${i})">✕</button>
-                </td>
+                <td style="font-weight:bold; color:#00a0e9;">${d.avgCoins.toLocaleString()}</td>
             `;
         });
     }
@@ -233,19 +236,12 @@
 
     document.getElementById('download-btn').addEventListener('click', () => {
         const target = document.getElementById('capture-area');
-        const originalStyle = target.style.cssText;
-        target.style.width = "auto";
-        target.style.overflow = "visible";
-        target.style.display = "block";
-
-        html2canvas(target, {
-            useCORS: true,
-            scale: 2,
+        html2canvas(target, { 
+            useCORS: true, 
+            scale: 2, 
             backgroundColor: "#ffffff",
-            width: target.scrollWidth,
-            height: target.scrollHeight
+            ignoreElements: (element) => element.classList.contains('op-container')
         }).then(canvas => {
-            target.style.cssText = originalStyle;
             const link = document.createElement('a');
             link.download = 'tsum-ranking.png';
             link.href = canvas.toDataURL("image/png");
