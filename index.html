@@ -27,6 +27,10 @@
         .calc-header { background: var(--tsum-yellow); padding: 8px; border-radius: 10px; text-align: center; margin-bottom: 8px; font-weight: bold; border: 2px solid var(--tsum-brown); }
         .input-card { background: #fffef0; border: 2px solid #eee; border-radius: 12px; padding: 10px; margin-bottom: 10px; }
         
+        .mode-switch { display: flex; justify-content: center; gap: 10px; margin-bottom: 10px; }
+        .mode-btn { width: auto; padding: 8px 15px; font-size: 12px; background: #eee; border: 1px solid #ccc; border-radius: 10px; cursor: pointer; }
+        .mode-btn.active { background: var(--tsum-yellow); border-color: var(--tsum-brown); font-weight: bold; }
+
         .play-selector { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid var(--tsum-yellow); }
         
         #entries-container { max-height: 180px; overflow-y: auto; margin-bottom: 10px; border: 1px solid #f0f0f0; border-radius: 8px; background: #fff; }
@@ -40,11 +44,17 @@
             border-radius: 8px; 
             font-size: 14px; 
             box-sizing: border-box; 
+            width: 100%;
         }
 
         .info-row { margin-bottom: 10px; display: flex; flex-direction: column; }
         .info-row label { font-size: 11px; font-weight: bold; margin-bottom: 4px; color: #8d6e63; }
         
+        /* 直接入力モードのスマホ最適化 */
+        .direct-input-group { display: none; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+        .direct-input-group div { flex: 1 1 100px; display: flex; flex-direction: column; }
+        .direct-input-group label { font-size: 10px; font-weight: bold; margin-bottom: 2px; }
+
         button { 
             font-family: inherit;
             width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; font-size: 15px; 
@@ -56,13 +66,13 @@
         .table-wrap { width: 100%; overflow-x: auto; margin-top: 10px; }
         #capture-area { padding: 10px; background: white; display: inline-block; width: 100%; box-sizing: border-box; }
         
-        table { width: 100%; border-collapse: collapse; background: white; border: 2px solid var(--tsum-brown); }
-        th, td { border: 1px solid #ddd; padding: 6px 2px; text-align: center; font-size: 10px; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; background: white; border: 2px solid var(--tsum-brown); table-layout: fixed; }
+        th, td { border: 1px solid #ddd; padding: 6px 1px; text-align: center; font-size: 9px; font-weight: bold; overflow: hidden; }
         th { background: var(--tsum-yellow); color: var(--tsum-brown); border-bottom: 2px solid var(--tsum-brown); }
         .tsum-thumb { width: 35px; height: 35px; object-fit: cover; display: block; margin: auto; border-radius: 5px; border: 1px solid #eee; }
         
         .op-container { display: flex; justify-content: center; gap: 2px; margin-top: 5px; }
-        .op-btn { font-family: inherit; padding: 4px 6px; border: 1px solid #ccc; border-radius: 4px; background: #fff; font-size: 10px; cursor: pointer; }
+        .op-btn { font-family: inherit; padding: 4px 6px; border: 1px solid #ccc; border-radius: 4px; background: #fff; font-size: 10px; cursor: pointer; width: auto; }
         .delete-btn { background: #ffebee; color: #d32f2f; border: 1px solid #ffcdd2; }
     </style>
 </head>
@@ -74,11 +84,24 @@
     </div>
 
     <div class="input-card">
-        <div class="play-selector">
-            <label>プレイ回数</label>
-            <select id="play-count-selector" onchange="generateEntryRows()"></select>
+        <div class="mode-switch">
+            <button class="mode-btn active" id="mode-calc" onclick="setMode('calc')">計算モード</button>
+            <button class="mode-btn" id="mode-direct" onclick="setMode('direct')">直接入力</button>
         </div>
-        <div id="entries-container"></div>
+
+        <div id="calc-form">
+            <div class="play-selector">
+                <label style="font-size:12px; white-space:nowrap;">回数設定</label>
+                <select id="play-count-selector" onchange="generateEntryRows()"></select>
+            </div>
+            <div id="entries-container"></div>
+        </div>
+
+        <div id="direct-form" class="direct-input-group">
+            <div><label>効率(枚/分)</label><input type="number" id="d-eff" placeholder="7000" inputmode="numeric"></div>
+            <div><label>平均枚数</label><input type="number" id="d-avg" placeholder="8000" inputmode="numeric"></div>
+            <div><label>プレイ数</label><input type="number" id="d-count" placeholder="10" inputmode="numeric"></div>
+        </div>
 
         <div class="info-row"><label>アイテム設定</label>
             <select id="t-item" onchange="autoCalc()">
@@ -90,13 +113,13 @@
         </div>
         <div class="info-row"><label>ツム画像</label><input type="file" id="t-img" accept="image/*"></div>
         <div class="info-row"><label>ツム名</label><input type="text" id="t-name"></div>
-        <div class="info-row"><label>スキルレベル (SL)</label>
+        <div class="info-row"><label>SL</label>
             <select id="t-skill"><option>6</option><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option></select>
         </div>
 
         <button id="add-btn">リストに保存</button>
-        <button id="sort-btn">効率が高い順に並び替え</button>
-        <button id="download-btn">表全体を画像で保存</button>
+        <button id="sort-btn">効率順に並び替え</button>
+        <button id="download-btn">画像で保存</button>
     </div>
 
     <div class="table-wrap">
@@ -104,13 +127,14 @@
             <table id="targetTable">
                 <thead>
                     <tr>
-                        <th style="width:20px">No</th>
+                        <th style="width:15px">No</th>
                         <th style="width:40px">画像</th>
                         <th>ツム名</th>
-                        <th style="width:20px">SL</th>
-                        <th style="width:50px">アイテム</th>
-                        <th style="width:50px">枚/分</th>
-                        <th style="width:50px">平均枚数</th>
+                        <th style="width:18px">SL</th>
+                        <th style="width:40px">アイテム</th>
+                        <th style="width:25px">回数</th>
+                        <th style="width:48px">枚/分</th>
+                        <th style="width:48px">平均</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -120,12 +144,21 @@
 </div>
 
 <script>
+    let currentMode = 'calc';
     const playCountSel = document.getElementById('play-count-selector');
     const entriesContainer = document.getElementById('entries-container');
     const tableBody = document.querySelector('#targetTable tbody');
 
-    for(let i=1; i<=15; i++) playCountSel.add(new Option(i + "回平均", i));
+    for(let i=1; i<=30; i++) playCountSel.add(new Option(i + "回", i));
     playCountSel.value = 5;
+
+    function setMode(mode) {
+        currentMode = mode;
+        document.getElementById('mode-calc').classList.toggle('active', mode === 'calc');
+        document.getElementById('mode-direct').classList.toggle('active', mode === 'direct');
+        document.getElementById('calc-form').style.display = (mode === 'calc') ? 'block' : 'none';
+        document.getElementById('direct-form').style.display = (mode === 'direct') ? 'flex' : 'none';
+    }
 
     function generateEntryRows() {
         const count = parseInt(playCountSel.value);
@@ -133,7 +166,7 @@
         for(let i=1; i<=count; i++) {
             const row = document.createElement('div');
             row.className = "entry-row";
-            row.innerHTML = `<div class="entry-num">${i}</div><input type="number" class="c-coin" placeholder="枚数" oninput="autoCalc()" style="flex:1.2;" inputmode="numeric"><select class="c-min" onchange="autoCalc()">${genOptions(10,2)}分</select><select class="c-sec" onchange="autoCalc()">${genOptions(59,30)}秒</select>`;
+            row.innerHTML = `<div class="entry-num">${i}</div><input type="number" class="c-coin" placeholder="枚数" oninput="autoCalc()" style="flex:1.2;" inputmode="numeric"><select class="c-min" onchange="autoCalc()" style="flex:0.8;">${genOptions(15,2)}分</select><select class="c-sec" onchange="autoCalc()" style="flex:0.8;">${genOptions(59,30)}秒</select>`;
             entriesContainer.appendChild(row);
         }
         autoCalc();
@@ -146,6 +179,7 @@
     }
 
     function autoCalc() {
+        if(currentMode === 'direct') return null;
         const coins = document.querySelectorAll('.c-coin'), mins = document.querySelectorAll('.c-min'), secs = document.querySelectorAll('.c-sec');
         let profit = 0, time = 0, cnt = 0;
         const cost = parseInt(document.getElementById('t-item').value);
@@ -159,7 +193,7 @@
         if (cnt > 0 && time > 0) {
             const eff = Math.round(profit / time * 60);
             document.getElementById('calc-result').innerText = eff.toLocaleString();
-            return { eff };
+            return { eff, cnt };
         }
         document.getElementById('calc-result').innerText = "0"; return null;
     }
@@ -170,8 +204,7 @@
             const img = new Image();
             img.onload = () => {
                 const canvas = document.createElement('canvas');
-                canvas.width = 64;
-                canvas.height = 64;
+                canvas.width = 64; canvas.height = 64;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, 64, 64);
                 callback(canvas.toDataURL('image/jpeg', 0.8));
@@ -182,12 +215,23 @@
     }
 
     document.getElementById('add-btn').addEventListener('click', () => {
-        const res = autoCalc(); if(!res) return alert("コイン数を入力してね");
-        
-        const coins = document.querySelectorAll('.c-coin');
-        let totalCoins = 0, count = 0;
-        coins.forEach(input => { if(input.value) { totalCoins += parseFloat(input.value); count++; } });
-        const avgCoins = count > 0 ? Math.round(totalCoins / count) : 0;
+        let eff, avgCoins, playCnt;
+
+        if(currentMode === 'calc') {
+            const res = autoCalc();
+            if(!res) return alert("データを入力してね");
+            eff = res.eff;
+            playCnt = res.cnt;
+            let totalCoins = 0;
+            const coins = document.querySelectorAll('.c-coin');
+            coins.forEach(input => { if(input.value) totalCoins += parseFloat(input.value); });
+            avgCoins = Math.round(totalCoins / playCnt);
+        } else {
+            eff = parseInt(document.getElementById('d-eff').value);
+            avgCoins = parseInt(document.getElementById('d-avg').value);
+            playCnt = parseInt(document.getElementById('d-count').value);
+            if(isNaN(eff) || isNaN(avgCoins)) return alert("効率と平均枚数を入力してね");
+        }
 
         const name = document.getElementById('t-name').value || "---";
         const sl = document.getElementById('t-skill').value;
@@ -197,20 +241,13 @@
         const save = (imgData) => {
             try {
                 const data = JSON.parse(localStorage.getItem('tsumData') || '[]');
-                data.push({ name, sl, item: itemLabel, eff: res.eff, avgCoins, imgData });
+                data.push({ name, sl, item: itemLabel, eff, avgCoins, playCnt, imgData });
                 localStorage.setItem('tsumData', JSON.stringify(data));
                 renderTable();
-                alert("リストに保存したよ");
-            } catch (e) {
-                alert("容量がいっぱい！古いデータを消してね。");
-            }
+            } catch (e) { alert("保存容量がいっぱいです"); }
         };
 
-        if (imgFile) {
-            resizeImage(imgFile, save);
-        } else {
-            save(null);
-        }
+        if (imgFile) resizeImage(imgFile, save); else save(null);
     });
 
     function renderTable() {
@@ -221,7 +258,7 @@
             row.innerHTML = `
                 <td>${i+1}</td>
                 <td>${d.imgData?`<img src="${d.imgData}" class="tsum-thumb">`:''}</td>
-                <td style="text-align:left; padding-left:3px;">${d.name}<br>
+                <td style="text-align:left; padding-left:2px; word-break:break-all;">${d.name}<br>
                     <div class="op-container">
                         <button class="op-btn" onclick="moveItem(${i}, -1)">▲</button>
                         <button class="op-btn" onclick="moveItem(${i}, 1)">▼</button>
@@ -229,27 +266,25 @@
                     </div>
                 </td>
                 <td>${d.sl}</td>
-                <td style="font-size:8px;">${d.item}</td>
+                <td style="font-size:7px;">${d.item}</td>
+                <td>${d.playCnt || '-'}</td>
                 <td style="font-weight:bold">${d.eff.toLocaleString()}</td>
                 <td style="font-weight:bold; color:#00a0e9;">${d.avgCoins.toLocaleString()}</td>
             `;
         });
     }
 
-    function moveItem(index, direction) {
+    function moveItem(i, dir) {
         const data = JSON.parse(localStorage.getItem('tsumData') || '[]');
-        const newIndex = index + direction;
-        if (newIndex >= 0 && newIndex < data.length) {
-            const temp = data[index];
-            data[index] = data[newIndex];
-            data[newIndex] = temp;
+        if (i+dir >= 0 && i+dir < data.length) {
+            [data[i], data[i+dir]] = [data[i+dir], data[i]];
             localStorage.setItem('tsumData', JSON.stringify(data));
             renderTable();
         }
     }
 
     function deleteItem(i) {
-        if(confirm("消す？")) {
+        if(confirm("削除しますか？")) {
             const data = JSON.parse(localStorage.getItem('tsumData') || '[]');
             data.splice(i, 1);
             localStorage.setItem('tsumData', JSON.stringify(data));
@@ -265,12 +300,9 @@
     });
 
     document.getElementById('download-btn').addEventListener('click', () => {
-        const target = document.getElementById('capture-area');
-        html2canvas(target, { 
-            useCORS: true, 
-            scale: 2, 
-            backgroundColor: "#ffffff",
-            ignoreElements: (element) => element.classList.contains('op-container')
+        html2canvas(document.getElementById('capture-area'), { 
+            useCORS: true, scale: 2, backgroundColor: "#ffffff",
+            ignoreElements: (el) => el.classList.contains('op-container')
         }).then(canvas => {
             const link = document.createElement('a');
             link.download = 'tsum-ranking.png';
