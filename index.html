@@ -22,6 +22,19 @@
             -webkit-font-smoothing: antialiased;
         }
 
+        /* 共通クレジットスタイル */
+        .credit {
+            font-size: 10px;
+            margin-bottom: 5px;
+            color: #8d6e63;
+            text-align: left;
+        }
+        .credit a {
+            color: #00a0e9;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
         .main-container { width: 100%; max-width: 450px; background: white; border-radius: 15px; padding: 10px; box-sizing: border-box; }
         
         .calc-header { background: var(--tsum-yellow); padding: 8px; border-radius: 10px; text-align: center; margin-bottom: 8px; font-weight: bold; border: 2px solid var(--tsum-brown); }
@@ -50,7 +63,6 @@
         .info-row { margin-bottom: 10px; display: flex; flex-direction: column; }
         .info-row label { font-size: 11px; font-weight: bold; margin-bottom: 4px; color: #8d6e63; }
         
-        /* 直接入力モードのスマホ最適化 */
         .direct-input-group { display: none; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
         .direct-input-group div { flex: 1 1 100px; display: flex; flex-direction: column; }
         .direct-input-group label { font-size: 10px; font-weight: bold; margin-bottom: 2px; }
@@ -69,7 +81,7 @@
         table { width: 100%; border-collapse: collapse; background: white; border: 2px solid var(--tsum-brown); table-layout: fixed; }
         th, td { border: 1px solid #ddd; padding: 6px 1px; text-align: center; font-size: 9px; font-weight: bold; overflow: hidden; }
         th { background: var(--tsum-yellow); color: var(--tsum-brown); border-bottom: 2px solid var(--tsum-brown); }
-        .tsum-thumb { width: 35px; height: 35px; object-fit: cover; display: block; margin: auto; border-radius: 5px; border: 1px solid #eee; }
+        .tsum-thumb { width: 35px; height: 35px; object-fit: cover; display: block; margin: auto; border-radius: 5px; border: 1px solid #eee; cursor: pointer; }
         
         .op-container { display: flex; justify-content: center; gap: 2px; margin-top: 5px; }
         .op-btn { font-family: inherit; padding: 4px 6px; border: 1px solid #ccc; border-radius: 4px; background: #fff; font-size: 10px; cursor: pointer; width: auto; }
@@ -124,6 +136,7 @@
 
     <div class="table-wrap">
         <div id="capture-area">
+            <div class="credit">Made in X <a href="https://x.com/doriantsumtsum" target="_blank">@doriantsumtsum</a></div>
             <table id="targetTable">
                 <thead>
                     <tr>
@@ -143,11 +156,15 @@
     </div>
 </div>
 
+<input type="file" id="replace-img-input" accept="image/*" style="display:none;">
+
 <script>
     let currentMode = 'calc';
+    let currentReplaceIndex = -1;
     const playCountSel = document.getElementById('play-count-selector');
     const entriesContainer = document.getElementById('entries-container');
     const tableBody = document.querySelector('#targetTable tbody');
+    const replaceInput = document.getElementById('replace-img-input');
 
     for(let i=1; i<=30; i++) playCountSel.add(new Option(i + "回", i));
     playCountSel.value = 5;
@@ -214,6 +231,27 @@
         reader.readAsDataURL(file);
     }
 
+    function requestReplaceImage(index) {
+        currentReplaceIndex = index;
+        replaceInput.click();
+    }
+
+    replaceInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file && currentReplaceIndex !== -1) {
+            resizeImage(file, (imgData) => {
+                const data = JSON.parse(localStorage.getItem('tsumData') || '[]');
+                if (data[currentReplaceIndex]) {
+                    data[currentReplaceIndex].imgData = imgData;
+                    localStorage.setItem('tsumData', JSON.stringify(data));
+                    renderTable();
+                }
+                currentReplaceIndex = -1;
+                replaceInput.value = '';
+            });
+        }
+    });
+
     document.getElementById('add-btn').addEventListener('click', () => {
         let eff, avgCoins, playCnt;
 
@@ -257,7 +295,7 @@
             const row = tableBody.insertRow();
             row.innerHTML = `
                 <td>${i+1}</td>
-                <td>${d.imgData?`<img src="${d.imgData}" class="tsum-thumb">`:''}</td>
+                <td>${d.imgData?`<img src="${d.imgData}" class="tsum-thumb" onclick="requestReplaceImage(${i})">`:`<div class="tsum-thumb" style="background:#eee; display:flex; align-items:center; justify-content:center; font-size:8px; color:#aaa;" onclick="requestReplaceImage(${i})">タップ</div>`}</td>
                 <td style="text-align:left; padding-left:2px; word-break:break-all;">${d.name}<br>
                     <div class="op-container">
                         <button class="op-btn" onclick="moveItem(${i}, -1)">▲</button>
