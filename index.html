@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta name="google-site-verification" content="Rd1OrloK7WFvBG8CAwRfMzmD6e7EYWiWc36kF5fieKY" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ツムツム効率計算・表記作成ツール</title>
@@ -11,8 +10,6 @@
         :root { --tsum-yellow: #ffcf00; --tsum-brown: #5d4037; --bg-color: #fff9c4; }
         body { font-family: "FOT-ハミング Std E", "Humming Std E", "M PLUS Rounded 1c", sans-serif; background: var(--bg-color); color: var(--tsum-brown); margin: 0; padding: 5px; display: flex; flex-direction: column; align-items: center; -webkit-font-smoothing: antialiased; }
         .version-tag { font-size: 10px; color: #8d6e63; margin-bottom: 2px; align-self: flex-start; padding-left: 5px; }
-        .credit { font-size: 10px; margin-bottom: 5px; color: #8d6e63; text-align: left; }
-        .credit a { color: #00a0e9; text-decoration: none; font-weight: bold; }
         .main-container { width: 100%; max-width: 450px; background: white; border-radius: 15px; padding: 10px; box-sizing: border-box; }
         .calc-header { background: var(--tsum-yellow); padding: 8px; border-radius: 10px; text-align: center; margin-bottom: 8px; font-weight: bold; border: 2px solid var(--tsum-brown); }
         .input-card { background: #fffef0; border: 2px solid #eee; border-radius: 12px; padding: 10px; margin-bottom: 10px; }
@@ -20,15 +17,16 @@
         .mode-btn { width: auto; padding: 8px 15px; font-size: 12px; background: #eee; border: 1px solid #ccc; border-radius: 10px; cursor: pointer; }
         .mode-btn.active { background: var(--tsum-yellow); border-color: var(--tsum-brown); font-weight: bold; }
         .play-selector { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid var(--tsum-yellow); }
-        #entries-container { max-height: 180px; overflow-y: auto; margin-bottom: 10px; border: 1px solid #f0f0f0; border-radius: 8px; background: #fff; }
-        .entry-row { display: flex; align-items: center; gap: 5px; padding: 4px; border-bottom: 1px solid #eee; }
+        #entries-container { max-height: 220px; overflow-y: auto; margin-bottom: 10px; border: 1px solid #f0f0f0; border-radius: 8px; background: #fff; }
+        .entry-row { display: flex; align-items: center; gap: 3px; padding: 5px 2px; border-bottom: 1px solid #eee; }
         .entry-num { font-size: 10px; width: 15px; text-align: center; color: #999; }
+        .timer-btn { width: 45px !important; padding: 6px 0 !important; font-size: 10px !important; margin: 0 !important; background: #eee; border: 1px solid #ccc; }
+        .timer-btn.active { background: #ff5252; color: white; border-color: #d32f2f; }
         input[type="number"], input[type="text"], select { font-family: inherit; padding: 8px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box; width: 100%; }
         .info-row { margin-bottom: 10px; display: flex; flex-direction: column; }
         .info-row label { font-size: 11px; font-weight: bold; margin-bottom: 4px; color: #8d6e63; }
         .direct-input-group { display: none; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
         .direct-input-group div { flex: 1 1 100px; display: flex; flex-direction: column; }
-        .direct-input-group label { font-size: 10px; font-weight: bold; margin-bottom: 2px; }
         button { font-family: inherit; width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; font-size: 15px; }
         #add-btn { background: #00a0e9; color: white; box-shadow: 0 4px 0 #0077b3; }
         #sort-btn { background: #f39c12; color: white; box-shadow: 0 4px 0 #d35400; }
@@ -39,7 +37,7 @@
         .table-wrap { width: 100%; overflow-x: auto; margin-top: 10px; }
         #capture-area { padding: 10px; background: white; display: inline-block; width: 100%; box-sizing: border-box; }
         table { width: 100%; border-collapse: collapse; background: white; border: 2px solid var(--tsum-brown); table-layout: fixed; }
-        th, td { border: 1px solid #ddd; padding: 6px 1px; text-align: center; font-size: 9px; font-weight: bold; overflow: hidden; }
+        th, td { border: 1px solid #ddd; padding: 6px 1px; text-align: center; font-size: 9px; font-weight: bold; }
         th { background: var(--tsum-yellow); color: var(--tsum-brown); border-bottom: 2px solid var(--tsum-brown); }
         .tsum-thumb { width: 35px; height: 35px; object-fit: cover; display: block; margin: auto; border-radius: 5px; border: 1px solid #eee; cursor: pointer; }
         .op-container { display: flex; justify-content: center; gap: 2px; margin-top: 5px; }
@@ -50,7 +48,7 @@
 <body>
 
 <div class="main-container">
-    <div class="version-tag">Ver 1.0.4 | Code by Gemini</div>
+    <div class="version-tag">Ver 1.1.2 | Code By Gemini</div>
     <div class="calc-header">平均効率: <span id="calc-result">0</span> 枚/分</div>
 
     <div class="input-card">
@@ -66,16 +64,15 @@
             <div id="entries-container"></div>
         </div>
         <div id="direct-form" class="direct-input-group">
-            <div><label>効率(枚/分)</label><input type="number" id="d-eff" placeholder="7000" inputmode="numeric"></div>
-            <div><label>平均枚数</label><input type="number" id="d-avg" placeholder="8000" inputmode="numeric"></div>
-            <div><label>プレイ数</label><input type="number" id="d-count" placeholder="10" inputmode="numeric"></div>
+            <div><label>効率</label><input type="number" id="d-eff" inputmode="numeric"></div>
+            <div><label>平均</label><input type="number" id="d-avg" inputmode="numeric"></div>
+            <div><label>回数</label><input type="number" id="d-count" inputmode="numeric"></div>
         </div>
         <div class="info-row"><label>アイテム設定</label>
             <select id="t-item" onchange="autoCalc()">
-                <option value="2300" data-label="5-4+C">5→4 + Coin (2300)</option>
-                <option value="3800" data-label="5-4+C+B">5→4 + Coin + Bomb (3800)</option>
-                <option value="500" data-label="Coin">Coinのみ (500)</option>
-                <option value="2000" data-label="C+Time">Coin + Time (2000)</option>
+                <option value="2300" data-label="5-4+C">5→4+C</option>
+                <option value="3800" data-label="5-4+C+B">5→4+C+B</option>
+                <option value="500" data-label="Coin">Coinのみ</option>
             </select>
         </div>
         <div class="info-row"><label>ツム画像</label><input type="file" id="t-img" accept="image/*"></div>
@@ -87,17 +84,19 @@
         <button id="sort-btn">効率順に並び替え</button>
         <button id="download-btn">画像で保存</button>
         <div class="extra-btns">
-            <button id="excel-btn">Excel(CSV)保存</button>
+            <button id="excel-btn">HTML保存</button>
             <button id="clear-btn">データ全消去</button>
         </div>
     </div>
 
     <div class="table-wrap">
         <div id="capture-area">
-            <div class="credit">Made in X <a href="https://x.com/doriantsumtsum" target="_blank">@doriantsumtsum</a></div>
+            <div style="font-size:10px; color:#8d6e63; margin-bottom:5px; text-align:left;">
+                Made by <a href="https://x.com/doriantsumtsum" target="_blank" style="text-decoration:none; color:#00a0e9;">@doriantsumtsum</a>
+            </div>
             <table id="targetTable">
                 <thead>
-                    <tr><th style="width:15px">No</th><th style="width:40px">画像</th><th>ツム名</th><th style="width:18px">SL</th><th style="width:40px">アイテム</th><th style="width:25px">回数</th><th style="width:48px">枚/分</th><th style="width:48px">平均</th></tr>
+                    <tr><th style="width:15px">No</th><th style="width:40px">画像</th><th>ツム名</th><th style="width:18px">SL</th><th style="width:40px">ITEM</th><th style="width:25px">回</th><th style="width:48px">枚/分</th><th style="width:48px">平均</th></tr>
                 </thead>
                 <tbody></tbody>
             </table>
@@ -105,15 +104,14 @@
     </div>
 </div>
 
-<input type="file" id="replace-img-input" accept="image/*" style="display:none;">
-
 <script>
     let currentMode = 'calc';
-    let currentReplaceIndex = -1;
+    let timerInterval = null;
+    let activeTimerIdx = -1;
+
     const playCountSel = document.getElementById('play-count-selector');
     const entriesContainer = document.getElementById('entries-container');
     const tableBody = document.querySelector('#targetTable tbody');
-    const replaceInput = document.getElementById('replace-img-input');
 
     for(let i=1; i<=30; i++) playCountSel.add(new Option(i + "回", i));
     playCountSel.value = 5;
@@ -129,193 +127,129 @@
     function generateEntryRows() {
         const count = parseInt(playCountSel.value);
         entriesContainer.innerHTML = "";
-        for(let i=1; i<=count; i++) {
+        for(let i=0; i<count; i++) {
             const row = document.createElement('div');
             row.className = "entry-row";
-            row.innerHTML = `<div class="entry-num">${i}</div><input type="number" class="c-coin" placeholder="枚数" oninput="autoCalc()" style="flex:1.2;" inputmode="numeric"><select class="c-min" onchange="autoCalc()" style="flex:0.8;">${genOptions(15,2)}分</select><select class="c-sec" onchange="autoCalc()" style="flex:0.8;">${genOptions(59,30)}秒</select>`;
+            row.innerHTML = `<div class="entry-num">${i+1}</div><input type="number" class="c-coin" placeholder="枚数" oninput="autoCalc()" style="flex:1;" inputmode="numeric"><select class="c-min" onchange="autoCalc()" style="flex:0.6;">${genOptions(15)}分</select><select class="c-sec" onchange="autoCalc()" style="flex:0.6;">${genOptions(59)}秒</select><button class="timer-btn" onclick="toggleTimer(${i})">開始</button>`;
             entriesContainer.appendChild(row);
         }
         autoCalc();
     }
 
-    function genOptions(max, def) {
+    function genOptions(max) {
         let h = "";
-        for(let i=0; i<=max; i++) h += `<option value="${i}" ${i===def?'selected':''}>${i}</option>`;
+        for(let i=0; i<=max; i++) h += `<option value="${i}">${i}</option>`;
         return h;
     }
 
-    function autoCalc() {
-        if(currentMode === 'direct') return null;
-        const coins = document.querySelectorAll('.c-coin'), mins = document.querySelectorAll('.c-min'), secs = document.querySelectorAll('.c-sec');
-        let profit = 0, time = 0, cnt = 0;
-        const cost = parseInt(document.getElementById('t-item').value);
-        coins.forEach((input, i) => {
-            if(input.value) {
-                profit += (parseFloat(input.value) * 1.3) - cost;
-                time += (parseInt(mins[i].value) * 60) + parseInt(secs[i].value);
-                cnt++;
-            }
-        });
-        if (cnt > 0 && time > 0) {
-            const eff = Math.round(profit / time * 60);
-            document.getElementById('calc-result').innerText = eff.toLocaleString();
-            return { eff, cnt };
-        }
-        document.getElementById('calc-result').innerText = "0"; return null;
-    }
-
-    function resizeImage(file, callback) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const img = new Image();
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                canvas.width = 128; canvas.height = 128;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, 128, 128);
-                callback(canvas.toDataURL('image/webp', 0.5));
-            };
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-    }
-
-    function requestReplaceImage(index) {
-        currentReplaceIndex = index;
-        replaceInput.click();
-    }
-
-    replaceInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file && currentReplaceIndex !== -1) {
-            resizeImage(file, (imgData) => {
-                const data = JSON.parse(localStorage.getItem('tsumData') || '[]');
-                if (data[currentReplaceIndex]) {
-                    data[currentReplaceIndex].imgData = imgData;
-                    localStorage.setItem('tsumData', JSON.stringify(data));
-                    renderTable();
-                }
-                currentReplaceIndex = -1;
-                replaceInput.value = '';
-            });
-        }
-    });
-
-    document.getElementById('add-btn').addEventListener('click', () => {
-        let eff, avgCoins, playCnt;
-        if(currentMode === 'calc') {
-            const res = autoCalc();
-            if(!res) return alert("データを入力してね");
-            eff = res.eff; playCnt = res.cnt;
-            let totalCoins = 0;
-            const coins = document.querySelectorAll('.c-coin');
-            coins.forEach(input => { if(input.value) totalCoins += parseFloat(input.value); });
-            avgCoins = Math.round(totalCoins / playCnt);
+    function toggleTimer(idx) {
+        const btn = document.querySelectorAll('.timer-btn')[idx];
+        const minSel = document.querySelectorAll('.c-min')[idx];
+        const secSel = document.querySelectorAll('.c-sec')[idx];
+        const coinInput = document.querySelectorAll('.c-coin')[idx];
+        if (activeTimerIdx === idx) {
+            clearInterval(timerInterval);
+            btn.innerText = "開始"; btn.classList.remove('active'); activeTimerIdx = -1;
+            autoCalc(); coinInput.focus();
         } else {
-            eff = parseInt(document.getElementById('d-eff').value);
-            avgCoins = parseInt(document.getElementById('d-avg').value);
-            playCnt = parseInt(document.getElementById('d-count').value);
-            if(isNaN(eff) || isNaN(avgCoins)) return alert("効率と平均枚数を入力してね");
+            if (activeTimerIdx !== -1) toggleTimer(activeTimerIdx);
+            activeTimerIdx = idx;
+            let start = Date.now();
+            btn.innerText = "停止"; btn.classList.add('active');
+            timerInterval = setInterval(() => {
+                let s = Math.floor((Date.now() - start) / 1000);
+                minSel.value = Math.floor(s / 60); secSel.value = s % 60;
+            }, 1000);
         }
-        const name = document.getElementById('t-name').value || "---";
-        const sl = document.getElementById('t-skill').value;
-        const itemLabel = document.getElementById('t-item').options[document.getElementById('t-item').selectedIndex].getAttribute('data-label');
-        const imgFile = document.getElementById('t-img').files[0];
-        const save = (imgData) => {
-            try {
-                const data = JSON.parse(localStorage.getItem('tsumData') || '[]');
-                data.push({ name, sl, item: itemLabel, eff, avgCoins, playCnt, imgData });
-                localStorage.setItem('tsumData', JSON.stringify(data));
-                renderTable();
-            } catch (e) { alert("保存容量がいっぱいです。Excelに保存して消去してください"); }
-        };
-        if (imgFile) resizeImage(imgFile, save); else save(null);
-    });
+    }
+
+    function autoCalc() {
+        const coins = document.querySelectorAll('.c-coin'), mins = document.querySelectorAll('.c-min'), secs = document.querySelectorAll('.c-sec');
+        let p=0, t=0, c=0, cost = parseInt(document.getElementById('t-item').value);
+        coins.forEach((input, i) => { if(input.value) { p += (parseFloat(input.value) * 1.3) - cost; t += (parseInt(mins[i].value) * 60) + parseInt(secs[i].value); c++; } });
+        let eff = (c > 0 && t > 0) ? Math.round(p / t * 60) : 0;
+        document.getElementById('calc-result').innerText = eff.toLocaleString();
+        return { eff, cnt: c };
+    }
+
+    function moveItem(i, dir) {
+        const d = JSON.parse(localStorage.getItem('tsumData') || '[]');
+        if (i+dir >= 0 && i+dir < d.length) {
+            [d[i], d[i+dir]] = [d[i+dir], d[i]];
+            localStorage.setItem('tsumData', JSON.stringify(d)); renderTable();
+        }
+    }
+
+    function deleteItem(i) {
+        if(confirm("削除する？")) {
+            const d = JSON.parse(localStorage.getItem('tsumData') || '[]');
+            d.splice(i, 1); localStorage.setItem('tsumData', JSON.stringify(d)); renderTable();
+        }
+    }
 
     function renderTable() {
         tableBody.innerHTML = "";
         const data = JSON.parse(localStorage.getItem('tsumData') || '[]');
         data.forEach((d, i) => {
             const row = tableBody.insertRow();
-            row.innerHTML = `
-                <td>${i+1}</td>
-                <td>${d.imgData?`<img src="${d.imgData}" class="tsum-thumb" onclick="requestReplaceImage(${i})">`:`<div class="tsum-thumb" style="background:#eee; display:flex; align-items:center; justify-content:center; font-size:8px; color:#aaa;" onclick="requestReplaceImage(${i})">タップ</div>`}</td>
-                <td style="text-align:left; padding-left:2px; word-break:break-all;">${d.name}<br>
-                    <div class="op-container">
-                        <button class="op-btn" onclick="moveItem(${i}, -1)">▲</button>
-                        <button class="op-btn" onclick="moveItem(${i}, 1)">▼</button>
-                        <button class="op-btn delete-btn" onclick="deleteItem(${i})">✕</button>
-                    </div>
-                </td>
-                <td>${d.sl}</td>
-                <td style="font-size:7px;">${d.item}</td>
-                <td>${d.playCnt || '-'}</td>
-                <td style="font-weight:bold">${d.eff.toLocaleString()}</td>
-                <td style="font-weight:bold; color:#00a0e9;">${d.avgCoins.toLocaleString()}</td>
-            `;
+            row.innerHTML = `<td>${i+1}</td><td><img src="${d.imgData||''}" class="tsum-thumb"></td><td style="text-align:left; padding:2px;">${d.name}<br><div class="op-container"><button class="op-btn" onclick="moveItem(${i},-1)">▲</button><button class="op-btn" onclick="moveItem(${i},1)">▼</button><button class="op-btn delete-btn" onclick="deleteItem(${i})">✕</button></div></td><td>${d.sl}</td><td>${d.item}</td><td>${d.playCnt}</td><td style="font-weight:bold">${d.eff.toLocaleString()}</td><td style="color:#00a0e9;">${d.avgCoins.toLocaleString()}</td>`;
         });
     }
 
-    function moveItem(i, dir) {
-        const data = JSON.parse(localStorage.getItem('tsumData') || '[]');
-        if (i+dir >= 0 && i+dir < data.length) {
-            [data[i], data[i+dir]] = [data[i+dir], data[i]];
-            localStorage.setItem('tsumData', JSON.stringify(data));
-            renderTable();
+    document.getElementById('add-btn').addEventListener('click', () => {
+        let eff, avgCoins, playCnt;
+        if(currentMode === 'calc') {
+            const res = autoCalc();
+            if(!res || res.cnt === 0) return alert("データを入れてね");
+            eff = res.eff; playCnt = res.cnt;
+            let t = 0; document.querySelectorAll('.c-coin').forEach(i => t += (parseFloat(i.value)||0));
+            avgCoins = Math.round(t / playCnt);
+        } else {
+            eff = parseInt(document.getElementById('d-eff').value)||0;
+            avgCoins = parseInt(document.getElementById('d-avg').value)||0;
+            playCnt = parseInt(document.getElementById('d-count').value)||0;
         }
-    }
-
-    function deleteItem(i) {
-        if(confirm("削除しますか？")) {
-            const data = JSON.parse(localStorage.getItem('tsumData') || '[]');
-            data.splice(i, 1);
-            localStorage.setItem('tsumData', JSON.stringify(data));
-            renderTable();
-        }
-    }
+        const imgF = document.getElementById('t-img').files[0];
+        const save = (imgD) => {
+            const d = JSON.parse(localStorage.getItem('tsumData') || '[]');
+            d.push({ name:document.getElementById('t-name').value||"---", sl:document.getElementById('t-skill').value, item:document.getElementById('t-item').options[document.getElementById('t-item').selectedIndex].getAttribute('data-label'), eff, avgCoins, playCnt, imgData:imgD });
+            localStorage.setItem('tsumData', JSON.stringify(d)); renderTable();
+        };
+        if (imgF) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas'); canvas.width=128; canvas.height=128;
+                    canvas.getContext('2d').drawImage(img,0,0,128,128);
+                    save(canvas.toDataURL('image/webp', 0.5));
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(imgF);
+        } else save(null);
+    });
 
     document.getElementById('excel-btn').addEventListener('click', () => {
-        const data = JSON.parse(localStorage.getItem('tsumData') || '[]');
-        if (data.length === 0) return alert("データがありません");
-        let csv = "\uFEFFNo,ツム名,SL,アイテム,回数,効率(枚/分),平均枚数\n";
-        data.forEach((d, i) => {
-            csv += `${i+1},${d.name},${d.sl},${d.item},${d.playCnt},${d.eff},${d.avgCoins}\n`;
-        });
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `ツムツム効率データ_${new Date().toLocaleDateString()}.csv`;
-        link.click();
+        const d = JSON.parse(localStorage.getItem('tsumData') || '[]');
+        if(!d.length) return alert("データがない");
+        let html = `<html><head><meta charset="utf-8"><style>table{border-collapse:collapse;width:100%;}th,td{border:1px solid #ccc;padding:8px;text-align:center;}img{width:64px;height:64px;}</style></head><body><h2>ツムツム効率データ</h2><table border="1"><tr><th>No</th><th>画像</th><th>名</th><th>SL</th><th>ITEM</th><th>回数</th><th>効率</th><th>平均</th></tr>${d.map((val, i) => `<tr><td>${i+1}</td><td><img src="${val.imgData||''}"></td><td>${val.name}</td><td>${val.sl}</td><td>${val.item}</td><td>${val.playCnt}</td><td>${val.eff}</td><td>${val.avgCoins}</td></tr>`).join('')}</table></body></html>`;
+        const blob = new Blob([html], {type:'text/html'});
+        const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download="ツム効率.html"; link.click();
     });
 
-    document.getElementById('clear-btn').addEventListener('click', () => {
-        if(confirm("すべてのデータを消去します。Excel保存は済みましたか？")) {
-            localStorage.removeItem('tsumData');
-            renderTable();
-        }
-    });
-
+    document.getElementById('clear-btn').addEventListener('click', () => { if(confirm("全消去する？")) { localStorage.removeItem('tsumData'); renderTable(); } });
     document.getElementById('sort-btn').addEventListener('click', () => {
-        const data = JSON.parse(localStorage.getItem('tsumData') || '[]');
-        data.sort((a, b) => b.eff - a.eff);
-        localStorage.setItem('tsumData', JSON.stringify(data));
-        renderTable();
+        const d = JSON.parse(localStorage.getItem('tsumData') || '[]');
+        d.sort((a,b) => b.eff - a.eff); localStorage.setItem('tsumData', JSON.stringify(d)); renderTable();
     });
-
     document.getElementById('download-btn').addEventListener('click', () => {
-        html2canvas(document.getElementById('capture-area'), { 
-            useCORS: true, scale: 2, backgroundColor: "#ffffff",
-            ignoreElements: (el) => el.classList.contains('op-container')
-        }).then(canvas => {
-            const link = document.createElement('a');
-            link.download = 'tsum-ranking.png';
-            link.href = canvas.toDataURL("image/png");
-            link.click();
+        html2canvas(document.getElementById('capture-area')).then(c => {
+            const a = document.createElement('a'); a.href = c.toDataURL(); a.download='tsum-table.png'; a.click();
         });
     });
 
-    generateEntryRows();
-    renderTable();
+    generateEntryRows(); renderTable();
 </script>
 </body>
 </html>
