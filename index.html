@@ -22,18 +22,9 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* 共通クレジットスタイル */
-        .credit {
-            font-size: 10px;
-            margin-bottom: 5px;
-            color: #8d6e63;
-            text-align: left;
-        }
-        .credit a {
-            color: #00a0e9;
-            text-decoration: none;
-            font-weight: bold;
-        }
+        .version-tag { font-size: 10px; color: #8d6e63; margin-bottom: 2px; align-self: flex-start; padding-left: 5px; }
+        .credit { font-size: 10px; margin-bottom: 5px; color: #8d6e63; text-align: left; }
+        .credit a { color: #00a0e9; text-decoration: none; font-weight: bold; }
 
         .main-container { width: 100%; max-width: 450px; background: white; border-radius: 15px; padding: 10px; box-sizing: border-box; }
         
@@ -51,13 +42,7 @@
         .entry-num { font-size: 10px; width: 15px; text-align: center; color: #999; }
         
         input[type="number"], input[type="text"], select { 
-            font-family: inherit;
-            padding: 8px; 
-            border: 2px solid #ddd; 
-            border-radius: 8px; 
-            font-size: 14px; 
-            box-sizing: border-box; 
-            width: 100%;
+            font-family: inherit; padding: 8px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box; width: 100%;
         }
 
         .info-row { margin-bottom: 10px; display: flex; flex-direction: column; }
@@ -67,13 +52,15 @@
         .direct-input-group div { flex: 1 1 100px; display: flex; flex-direction: column; }
         .direct-input-group label { font-size: 10px; font-weight: bold; margin-bottom: 2px; }
 
-        button { 
-            font-family: inherit;
-            width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; font-size: 15px; 
-        }
+        button { font-family: inherit; width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; font-size: 15px; }
+        
         #add-btn { background: #00a0e9; color: white; box-shadow: 0 4px 0 #0077b3; }
-        #sort-btn { background: #f39c12; color: white; box-shadow: 0 4px 0 #d35400; margin-bottom: 5px; }
+        #sort-btn { background: #f39c12; color: white; box-shadow: 0 4px 0 #d35400; }
         #download-btn { background: #4caf50; color: white; box-shadow: 0 4px 0 #388e3c; }
+        
+        .extra-btns { display: flex; gap: 5px; margin-top: 5px; }
+        #excel-btn { background: #217346; color: white; box-shadow: 0 4px 0 #154c2e; flex: 1; padding: 8px; font-size: 12px; }
+        #clear-btn { background: #e74c3c; color: white; box-shadow: 0 4px 0 #c0392b; flex: 1; padding: 8px; font-size: 12px; }
         
         .table-wrap { width: 100%; overflow-x: auto; margin-top: 10px; }
         #capture-area { padding: 10px; background: white; display: inline-block; width: 100%; box-sizing: border-box; }
@@ -91,6 +78,7 @@
 <body>
 
 <div class="main-container">
+    <div class="version-tag">Ver 1.0.4</div>
     <div class="calc-header">
         平均効率: <span id="calc-result">0</span> 枚/分
     </div>
@@ -132,6 +120,11 @@
         <button id="add-btn">リストに保存</button>
         <button id="sort-btn">効率順に並び替え</button>
         <button id="download-btn">画像で保存</button>
+        
+        <div class="extra-btns">
+            <button id="excel-btn">Excel(CSV)保存</button>
+            <button id="clear-btn">データ全消去</button>
+        </div>
     </div>
 
     <div class="table-wrap">
@@ -254,12 +247,10 @@
 
     document.getElementById('add-btn').addEventListener('click', () => {
         let eff, avgCoins, playCnt;
-
         if(currentMode === 'calc') {
             const res = autoCalc();
             if(!res) return alert("データを入力してね");
-            eff = res.eff;
-            playCnt = res.cnt;
+            eff = res.eff; playCnt = res.cnt;
             let totalCoins = 0;
             const coins = document.querySelectorAll('.c-coin');
             coins.forEach(input => { if(input.value) totalCoins += parseFloat(input.value); });
@@ -270,21 +261,18 @@
             playCnt = parseInt(document.getElementById('d-count').value);
             if(isNaN(eff) || isNaN(avgCoins)) return alert("効率と平均枚数を入力してね");
         }
-
         const name = document.getElementById('t-name').value || "---";
         const sl = document.getElementById('t-skill').value;
         const itemLabel = document.getElementById('t-item').options[document.getElementById('t-item').selectedIndex].getAttribute('data-label');
         const imgFile = document.getElementById('t-img').files[0];
-
         const save = (imgData) => {
             try {
                 const data = JSON.parse(localStorage.getItem('tsumData') || '[]');
                 data.push({ name, sl, item: itemLabel, eff, avgCoins, playCnt, imgData });
                 localStorage.setItem('tsumData', JSON.stringify(data));
                 renderTable();
-            } catch (e) { alert("保存容量がいっぱいです"); }
+            } catch (e) { alert("保存容量がいっぱいです。Excelに保存して消去してください"); }
         };
-
         if (imgFile) resizeImage(imgFile, save); else save(null);
     });
 
@@ -329,6 +317,27 @@
             renderTable();
         }
     }
+
+    document.getElementById('excel-btn').addEventListener('click', () => {
+        const data = JSON.parse(localStorage.getItem('tsumData') || '[]');
+        if (data.length === 0) return alert("データがありません💩");
+        let csv = "\uFEFFNo,ツム名,SL,アイテム,回数,効率(枚/分),平均枚数\n";
+        data.forEach((d, i) => {
+            csv += `${i+1},${d.name},${d.sl},${d.item},${d.playCnt},${d.eff},${d.avgCoins}\n`;
+        });
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `ツムツム効率データ_${new Date().toLocaleDateString()}.csv`;
+        link.click();
+    });
+
+    document.getElementById('clear-btn').addEventListener('click', () => {
+        if(confirm("すべてのデータを消去します。Excel保存は済みましたか？")) {
+            localStorage.removeItem('tsumData');
+            renderTable();
+        }
+    });
 
     document.getElementById('sort-btn').addEventListener('click', () => {
         const data = JSON.parse(localStorage.getItem('tsumData') || '[]');
