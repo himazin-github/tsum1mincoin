@@ -9,67 +9,39 @@
     <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700&display=swap" rel="stylesheet">
     <style>
         :root { --tsum-yellow: #ffcf00; --tsum-brown: #5d4037; --bg-color: #fff9c4; }
-        
-        body { 
-            font-family: "FOT-ハミング Std E", "Humming Std E", "M PLUS Rounded 1c", sans-serif; 
-            background: var(--bg-color); 
-            color: var(--tsum-brown); 
-            margin: 0; 
-            padding: 5px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            -webkit-font-smoothing: antialiased;
-        }
-
+        body { font-family: "FOT-ハミング Std E", "Humming Std E", "M PLUS Rounded 1c", sans-serif; background: var(--bg-color); color: var(--tsum-brown); margin: 0; padding: 5px; display: flex; flex-direction: column; align-items: center; -webkit-font-smoothing: antialiased; }
         .version-tag { font-size: 10px; color: #8d6e63; margin-bottom: 2px; align-self: flex-start; padding-left: 5px; }
         .credit { font-size: 10px; margin-bottom: 5px; color: #8d6e63; text-align: left; }
         .credit a { color: #00a0e9; text-decoration: none; font-weight: bold; }
-
         .main-container { width: 100%; max-width: 450px; background: white; border-radius: 15px; padding: 10px; box-sizing: border-box; }
-        
         .calc-header { background: var(--tsum-yellow); padding: 8px; border-radius: 10px; text-align: center; margin-bottom: 8px; font-weight: bold; border: 2px solid var(--tsum-brown); }
         .input-card { background: #fffef0; border: 2px solid #eee; border-radius: 12px; padding: 10px; margin-bottom: 10px; }
-        
         .mode-switch { display: flex; justify-content: center; gap: 10px; margin-bottom: 10px; }
         .mode-btn { width: auto; padding: 8px 15px; font-size: 12px; background: #eee; border: 1px solid #ccc; border-radius: 10px; cursor: pointer; }
         .mode-btn.active { background: var(--tsum-yellow); border-color: var(--tsum-brown); font-weight: bold; }
-
         .play-selector { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid var(--tsum-yellow); }
-        
         #entries-container { max-height: 180px; overflow-y: auto; margin-bottom: 10px; border: 1px solid #f0f0f0; border-radius: 8px; background: #fff; }
         .entry-row { display: flex; align-items: center; gap: 5px; padding: 4px; border-bottom: 1px solid #eee; }
         .entry-num { font-size: 10px; width: 15px; text-align: center; color: #999; }
-        
-        input[type="number"], input[type="text"], select { 
-            font-family: inherit; padding: 8px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box; width: 100%;
-        }
-
+        input[type="number"], input[type="text"], select { font-family: inherit; padding: 8px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box; width: 100%; }
         .info-row { margin-bottom: 10px; display: flex; flex-direction: column; }
         .info-row label { font-size: 11px; font-weight: bold; margin-bottom: 4px; color: #8d6e63; }
-        
         .direct-input-group { display: none; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
         .direct-input-group div { flex: 1 1 100px; display: flex; flex-direction: column; }
         .direct-input-group label { font-size: 10px; font-weight: bold; margin-bottom: 2px; }
-
         button { font-family: inherit; width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; font-size: 15px; }
-        
         #add-btn { background: #00a0e9; color: white; box-shadow: 0 4px 0 #0077b3; }
         #sort-btn { background: #f39c12; color: white; box-shadow: 0 4px 0 #d35400; }
         #download-btn { background: #4caf50; color: white; box-shadow: 0 4px 0 #388e3c; }
-        
         .extra-btns { display: flex; gap: 5px; margin-top: 5px; }
         #excel-btn { background: #217346; color: white; box-shadow: 0 4px 0 #154c2e; flex: 1; padding: 8px; font-size: 12px; }
         #clear-btn { background: #e74c3c; color: white; box-shadow: 0 4px 0 #c0392b; flex: 1; padding: 8px; font-size: 12px; }
-        
         .table-wrap { width: 100%; overflow-x: auto; margin-top: 10px; }
         #capture-area { padding: 10px; background: white; display: inline-block; width: 100%; box-sizing: border-box; }
-        
         table { width: 100%; border-collapse: collapse; background: white; border: 2px solid var(--tsum-brown); table-layout: fixed; }
         th, td { border: 1px solid #ddd; padding: 6px 1px; text-align: center; font-size: 9px; font-weight: bold; overflow: hidden; }
         th { background: var(--tsum-yellow); color: var(--tsum-brown); border-bottom: 2px solid var(--tsum-brown); }
         .tsum-thumb { width: 35px; height: 35px; object-fit: cover; display: block; margin: auto; border-radius: 5px; border: 1px solid #eee; cursor: pointer; }
-        
         .op-container { display: flex; justify-content: center; gap: 2px; margin-top: 5px; }
         .op-btn { font-family: inherit; padding: 4px 6px; border: 1px solid #ccc; border-radius: 4px; background: #fff; font-size: 10px; cursor: pointer; width: auto; }
         .delete-btn { background: #ffebee; color: #d32f2f; border: 1px solid #ffcdd2; }
@@ -78,17 +50,14 @@
 <body>
 
 <div class="main-container">
-    <div class="version-tag">Ver 1.0.4</div>
-    <div class="calc-header">
-        平均効率: <span id="calc-result">0</span> 枚/分
-    </div>
+    <div class="version-tag">Ver 1.0.4 | Code by Gemini</div>
+    <div class="calc-header">平均効率: <span id="calc-result">0</span> 枚/分</div>
 
     <div class="input-card">
         <div class="mode-switch">
             <button class="mode-btn active" id="mode-calc" onclick="setMode('calc')">計算モード</button>
             <button class="mode-btn" id="mode-direct" onclick="setMode('direct')">直接入力</button>
         </div>
-
         <div id="calc-form">
             <div class="play-selector">
                 <label style="font-size:12px; white-space:nowrap;">回数設定</label>
@@ -96,13 +65,11 @@
             </div>
             <div id="entries-container"></div>
         </div>
-
         <div id="direct-form" class="direct-input-group">
             <div><label>効率(枚/分)</label><input type="number" id="d-eff" placeholder="7000" inputmode="numeric"></div>
             <div><label>平均枚数</label><input type="number" id="d-avg" placeholder="8000" inputmode="numeric"></div>
             <div><label>プレイ数</label><input type="number" id="d-count" placeholder="10" inputmode="numeric"></div>
         </div>
-
         <div class="info-row"><label>アイテム設定</label>
             <select id="t-item" onchange="autoCalc()">
                 <option value="2300" data-label="5-4+C">5→4 + Coin (2300)</option>
@@ -116,11 +83,9 @@
         <div class="info-row"><label>SL</label>
             <select id="t-skill"><option>6</option><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option></select>
         </div>
-
         <button id="add-btn">リストに保存</button>
         <button id="sort-btn">効率順に並び替え</button>
         <button id="download-btn">画像で保存</button>
-        
         <div class="extra-btns">
             <button id="excel-btn">Excel(CSV)保存</button>
             <button id="clear-btn">データ全消去</button>
@@ -132,16 +97,7 @@
             <div class="credit">Made in X <a href="https://x.com/doriantsumtsum" target="_blank">@doriantsumtsum</a></div>
             <table id="targetTable">
                 <thead>
-                    <tr>
-                        <th style="width:15px">No</th>
-                        <th style="width:40px">画像</th>
-                        <th>ツム名</th>
-                        <th style="width:18px">SL</th>
-                        <th style="width:40px">アイテム</th>
-                        <th style="width:25px">回数</th>
-                        <th style="width:48px">枚/分</th>
-                        <th style="width:48px">平均</th>
-                    </tr>
+                    <tr><th style="width:15px">No</th><th style="width:40px">画像</th><th>ツム名</th><th style="width:18px">SL</th><th style="width:40px">アイテム</th><th style="width:25px">回数</th><th style="width:48px">枚/分</th><th style="width:48px">平均</th></tr>
                 </thead>
                 <tbody></tbody>
             </table>
@@ -214,10 +170,10 @@
             const img = new Image();
             img.onload = () => {
                 const canvas = document.createElement('canvas');
-                canvas.width = 64; canvas.height = 64;
+                canvas.width = 128; canvas.height = 128;
                 const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, 64, 64);
-                callback(canvas.toDataURL('image/jpeg', 0.8));
+                ctx.drawImage(img, 0, 0, 128, 128);
+                callback(canvas.toDataURL('image/webp', 0.5));
             };
             img.src = e.target.result;
         };
@@ -320,7 +276,7 @@
 
     document.getElementById('excel-btn').addEventListener('click', () => {
         const data = JSON.parse(localStorage.getItem('tsumData') || '[]');
-        if (data.length === 0) return alert("データがありません💩");
+        if (data.length === 0) return alert("データがありません");
         let csv = "\uFEFFNo,ツム名,SL,アイテム,回数,効率(枚/分),平均枚数\n";
         data.forEach((d, i) => {
             csv += `${i+1},${d.name},${d.sl},${d.item},${d.playCnt},${d.eff},${d.avgCoins}\n`;
@@ -361,7 +317,6 @@
     generateEntryRows();
     renderTable();
 </script>
-
 </body>
 </html>
 
