@@ -147,7 +147,6 @@
             for(let i=0; i<count; i++) {
                 const row = document.createElement('div');
                 row.className = "entry-row";
-                // 分を2、秒を30に初期設定💩
                 row.innerHTML = `<div class="entry-num">${i+1}</div><input type="number" class="c-coin" placeholder="枚数" oninput="autoCalc()" style="flex:1;" inputmode="numeric"><select class="c-min" onchange="autoCalc()" style="flex:0.6;">${genOptions(15, 2)}分</select><select class="c-sec" onchange="autoCalc()" style="flex:0.6;">${genOptions(59, 30)}秒</select><button class="timer-btn" onclick="toggleTimer(${i})">開始</button>`;
                 entriesContainer.appendChild(row);
             }
@@ -264,9 +263,18 @@
             const d = JSON.parse(localStorage.getItem('tsumData') || '[]');
             d.sort((a,b) => b.eff - a.eff); localStorage.setItem('tsumData', JSON.stringify(d)); renderTable();
         });
+
+        // 修正済みの画像保存処理！これならボタンは写り込まないはずだぜ💩
         document.getElementById('download-btn').addEventListener('click', () => {
+            const ops = document.querySelectorAll('.op-container');
+            ops.forEach(el => el.style.display = 'none');
+            
             html2canvas(document.getElementById('capture-area')).then(c => {
-                const a = document.createElement('a'); a.href = c.toDataURL(); a.download='tsum-table.png'; a.click();
+                const a = document.createElement('a'); 
+                a.href = c.toDataURL(); 
+                a.download = 'tsum-table.png'; 
+                a.click();
+                ops.forEach(el => el.style.display = 'flex');
             });
         });
 
