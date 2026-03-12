@@ -64,7 +64,7 @@
     <h1>ツムツム効率計算ツール</h1>
 
     <div class="main-container">
-        <div class="version-tag">Ver 1.1.3 |Code By Gemini</div>
+        <div class="version-tag">Ver 1.1.4 |Code By Gemini</div>
         <div class="calc-header">平均効率: <span id="calc-result">0</span> 枚/分</div>
 
         <div class="input-card">
@@ -120,8 +120,6 @@
         </div>
     </div>
 
-    
-
     <script>
         let currentMode = 'calc';
         let timerInterval = null;
@@ -148,15 +146,19 @@
             for(let i=0; i<count; i++) {
                 const row = document.createElement('div');
                 row.className = "entry-row";
-                row.innerHTML = `<div class="entry-num">${i+1}</div><input type="number" class="c-coin" placeholder="枚数" oninput="autoCalc()" style="flex:1;" inputmode="numeric"><select class="c-min" onchange="autoCalc()" style="flex:0.6;">${genOptions(15)}分</select><select class="c-sec" onchange="autoCalc()" style="flex:0.6;">${genOptions(59)}秒</select><button class="timer-btn" onclick="toggleTimer(${i})">開始</button>`;
+                // 分を2、秒を30に初期設定💩
+                row.innerHTML = `<div class="entry-num">${i+1}</div><input type="number" class="c-coin" placeholder="枚数" oninput="autoCalc()" style="flex:1;" inputmode="numeric"><select class="c-min" onchange="autoCalc()" style="flex:0.6;">${genOptions(15, 2)}分</select><select class="c-sec" onchange="autoCalc()" style="flex:0.6;">${genOptions(59, 30)}秒</select><button class="timer-btn" onclick="toggleTimer(${i})">開始</button>`;
                 entriesContainer.appendChild(row);
             }
             autoCalc();
         }
 
-        function genOptions(max) {
+        function genOptions(max, defValue = 0) {
             let h = "";
-            for(let i=0; i<=max; i++) h += `<option value="${i}">${i}</option>`;
+            for(let i=0; i<=max; i++) {
+                let sel = (i === defValue) ? "selected" : "";
+                h += `<option value="${i}" ${sel}>${i}</option>`;
+            }
             return h;
         }
 
