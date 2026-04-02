@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ツムツム効率計算ツール</title>
+    <title>ツムツム効率計算ツール | Ver 1.2.3</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700&display=swap" rel="stylesheet">
@@ -15,7 +15,6 @@
         .main-container { width: 100%; max-width: 450px; background: white; border-radius: 15px; padding: 10px; box-sizing: border-box; }
         .calc-header { background: var(--tsum-yellow); padding: 8px; border-radius: 10px; text-align: center; margin-bottom: 8px; font-weight: bold; border: 2px solid var(--tsum-brown); }
         
-        /* アイテムセレクター */
         .item-selection-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; background: #5a8bd0; padding: 8px; border-radius: 12px; margin-bottom: 10px; border: 2px solid var(--tsum-brown); }
         .item-node { background: #7bb3ff; border: 2px solid #fff; border-radius: 10px; padding: 4px; cursor: pointer; display: flex; flex-direction: column; align-items: center; transition: 0.2s; }
         .item-node.active { background: #fff176; border-color: #fbc02d; box-shadow: inset 0 0 8px rgba(0,0,0,0.2); }
@@ -27,12 +26,14 @@
         .mode-switch { display: flex; justify-content: center; gap: 10px; margin-bottom: 10px; }
         .mode-btn { width: auto; padding: 8px 15px; font-size: 12px; background: #eee; border: 1px solid #ccc; border-radius: 10px; cursor: pointer; }
         .mode-btn.active { background: var(--tsum-yellow); border-color: var(--tsum-brown); font-weight: bold; }
+        
         .play-selector { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid var(--tsum-yellow); }
         #entries-container { max-height: 220px; overflow-y: auto; margin-bottom: 10px; border: 1px solid #f0f0f0; border-radius: 8px; background: #fff; }
         .entry-row { display: flex; align-items: center; gap: 3px; padding: 5px 2px; border-bottom: 1px solid #eee; }
         .entry-num { font-size: 10px; width: 15px; text-align: center; color: #999; }
         .timer-btn { width: 45px !important; padding: 6px 0 !important; font-size: 10px !important; margin: 0 !important; background: #eee; border: 1px solid #ccc; }
         .timer-btn.active { background: #ff5252; color: white; border-color: #d32f2f; }
+        
         input[type="number"], input[type="text"], select { font-family: inherit; padding: 8px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box; width: 100%; }
         .info-row { margin-bottom: 10px; display: flex; flex-direction: column; }
         .info-row label { font-size: 11px; font-weight: bold; margin-bottom: 4px; color: #8d6e63; }
@@ -61,7 +62,7 @@
     <h1>ツムツム効率計算ツール</h1>
 
     <div class="main-container">
-        <div class="version-tag">Ver 1.2.1 | Code By Gemini</div>
+        <div class="version-tag">Ver 1.2.3 | Code By Gemini</div>
         <div class="calc-header">平均効率: <span id="calc-result">0</span> 枚/分</div>
 
         <div class="item-selection-grid">
@@ -232,7 +233,7 @@
             let eff, avgCoins, playCnt;
             if(currentMode === 'calc') {
                 const res = autoCalc();
-                if(!res || res.cnt === 0) return alert("データを入れてね");
+                if(!res || res.cnt === 0) return alert("データを入れてください");
                 eff = res.eff; playCnt = res.cnt;
                 let t = 0; document.querySelectorAll('.c-coin').forEach(i => t += (parseFloat(i.value)||0));
                 avgCoins = Math.round(t / playCnt);
@@ -272,7 +273,15 @@
             });
         });
 
-        document.getElementById('clear-btn').addEventListener('click', () => { if(confirm("全消去する？")) { localStorage.removeItem('tsumData'); renderTable(); } });
+        document.getElementById('excel-btn').addEventListener('click', () => {
+            const d = JSON.parse(localStorage.getItem('tsumData') || '[]');
+            if(!d.length) return alert("データがありません");
+            let html = `<html><head><meta charset="utf-8"><style>table{border-collapse:collapse;width:100%;font-family:sans-serif;}th,td{border:1px solid #ccc;padding:8px;text-align:center;}th{background:#ffcf00;}img{width:64px;height:64px;object-fit:cover;border-radius:5px;}</style></head><body><h2>ツムツム効率データ</h2><table border="1"><tr><th>No</th><th>画像</th><th>名</th><th>SL</th><th>ITEM</th><th>回数</th><th>効率</th><th>平均</th></tr>${d.map((val, i) => `<tr><td>${i+1}</td><td>${val.imgData ? `<img src="${val.imgData}">` : 'なし'}</td><td>${val.name}</td><td>${val.sl}</td><td>${val.item}</td><td>${val.playCnt}</td><td>${val.eff.toLocaleString()}</td><td>${val.avgCoins.toLocaleString()}</td></tr>`).join('')}</table></body></html>`;
+            const blob = new Blob([html], {type:'text/html'});
+            const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download="ツム効率データ.html"; link.click();
+        });
+
+        document.getElementById('clear-btn').addEventListener('click', () => { if(confirm("全消去しますか？")) { localStorage.removeItem('tsumData'); renderTable(); } });
         document.getElementById('sort-btn').addEventListener('click', () => {
             const d = JSON.parse(localStorage.getItem('tsumData') || '[]');
             d.sort((a,b) => b.eff - a.eff); localStorage.setItem('tsumData', JSON.stringify(d)); renderTable();
@@ -282,3 +291,4 @@
     </script>
 </body>
 </html>
+
