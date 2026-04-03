@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ツムツム効率計算ツール | Ver 1.2.4</title>
+    <title>ツムツム効率計算ツール | Ver 1.2.5</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700&display=swap" rel="stylesheet">
@@ -11,7 +11,10 @@
         :root { --tsum-yellow: #ffcf00; --tsum-brown: #5d4037; --bg-color: #fff9c4; --tsum-blue: #4a90e2; }
         body { font-family: "FOT-ハミング Std E", "Humming Std E", "M PLUS Rounded 1c", sans-serif; background: var(--bg-color); color: var(--tsum-brown); margin: 0; padding: 5px; display: flex; flex-direction: column; align-items: center; -webkit-font-smoothing: antialiased; }
         h1 { font-size: 18px; margin: 10px 0; color: var(--tsum-brown); }
-        .version-tag { font-size: 10px; color: #8d6e63; margin-bottom: 2px; align-self: flex-start; padding-left: 5px; }
+        .version-tag { font-size: 10px; color: #8d6e63; margin-bottom: 2px; align-self: flex-start; padding-left: 5px; display: flex; align-items: center; gap: 5px; }
+        .version-tag a { color: #8d6e63; text-decoration: none; font-weight: bold; }
+        .version-tag a:hover { text-decoration: underline; }
+
         .main-container { width: 100%; max-width: 450px; background: white; border-radius: 15px; padding: 10px; box-sizing: border-box; }
         .calc-header { background: var(--tsum-yellow); padding: 8px; border-radius: 10px; text-align: center; margin-bottom: 8px; font-weight: bold; border: 2px solid var(--tsum-brown); }
         
@@ -62,7 +65,10 @@
     <h1>ツムツム効率計算ツール</h1>
 
     <div class="main-container">
-        <div class="version-tag">Ver 1.2.4 | アイテム4種限定</div>
+        <div class="version-tag">
+            Ver 1.2.5 | Code By Gemini | 
+            <a href="https://x.com/doriantsumtsum" target="_blank" rel="noopener noreferrer">𝕏 @doriantsumtsum</a>
+        </div>
         <div class="calc-header">平均効率: <span id="calc-result">0</span> 枚/分</div>
 
         <div class="item-selection-grid">
