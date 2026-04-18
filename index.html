@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ツムツム効率計算ツール | Ver 1.2.5</title>
+    <title>ツムツム効率計算ツール | Ver 1.3.1</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700&display=swap" rel="stylesheet">
@@ -52,7 +52,7 @@
         .table-wrap { width: 100%; overflow-x: auto; margin-top: 10px; }
         #capture-area { padding: 10px; background: white; display: inline-block; width: 100%; box-sizing: border-box; }
         table { width: 100%; border-collapse: collapse; background: white; border: 2px solid var(--tsum-brown); table-layout: fixed; }
-        th, td { border: 1px solid #ddd; padding: 6px 1px; text-align: center; font-size: 9px; font-weight: bold; }
+        th, td { border: 1px solid #ddd; padding: 6px 1px; text-align: center; font-size: 9px; font-weight: bold; word-break: break-all; }
         th { background: var(--tsum-yellow); color: var(--tsum-brown); border-bottom: 2px solid var(--tsum-brown); }
         .tsum-thumb { width: 35px; height: 35px; object-fit: cover; display: block; margin: auto; border-radius: 5px; border: 1px solid #eee; }
         .op-container { display: flex; justify-content: center; gap: 2px; margin-top: 5px; }
@@ -66,16 +66,16 @@
 
     <div class="main-container">
         <div class="version-tag">
-            Ver 1.2.5 | Code By Gemini | 
+            Ver 1.3.1 | Code By Gemini | 
             <a href="https://x.com/doriantsumtsum" target="_blank" rel="noopener noreferrer">𝕏 @doriantsumtsum</a>
         </div>
         <div class="calc-header">平均効率: <span id="calc-result">0</span> 枚/分</div>
 
         <div class="item-selection-grid">
-            <div class="item-node" onclick="toggleItem(this, 500, '+Coin')"><span>+Coin</span><small>500</small></div>
-            <div class="item-node" onclick="toggleItem(this, 1800, '5→4')"><span>5→4</span><small>1800</small></div>
-            <div class="item-node" onclick="toggleItem(this, 1500, '+Bomb')"><span>+Bomb</span><small>1500</small></div>
-            <div class="item-node" onclick="toggleItem(this, 1000, '+Time')"><span>+Time</span><small>1000</small></div>
+            <div class="item-node" onclick="toggleItem(this, 500, 'coin')"><span>coin</span><small>500</small></div>
+            <div class="item-node" onclick="toggleItem(this, 1800, '5-4')"><span>5-4</span><small>1800</small></div>
+            <div class="item-node" onclick="toggleItem(this, 1500, 'bomb')"><span>bomb</span><small>1500</small></div>
+            <div class="item-node" onclick="toggleItem(this, 1000, 'time')"><span>time</span><small>1000</small></div>
         </div>
 
         <div class="input-card">
@@ -116,7 +116,7 @@
             <div id="capture-area">
                 <table id="targetTable">
                     <thead>
-                        <tr><th style="width:15px">No</th><th style="width:40px">画像</th><th>ツム名</th><th style="width:18px">SL</th><th style="width:40px">ITEM</th><th style="width:25px">回</th><th style="width:48px">枚/分</th><th style="width:48px">平均</th></tr>
+                        <tr><th style="width:15px">No</th><th style="width:40px">画像</th><th>ツム名</th><th style="width:18px">SL</th><th style="width:55px">ITEM</th><th style="width:25px">回</th><th style="width:48px">枚/分</th><th style="width:48px">平均</th></tr>
                     </thead>
                     <tbody></tbody>
                 </table>
@@ -144,11 +144,11 @@
             if (el.classList.contains('active')) {
                 selectedItems.push(name);
                 totalCost += cost;
-                if (name === '+Coin') isCoinBoost = true;
+                if (name === 'coin') isCoinBoost = true;
             } else {
                 selectedItems = selectedItems.filter(i => i !== name);
                 totalCost -= cost;
-                if (name === '+Coin') isCoinBoost = false;
+                if (name === 'coin') isCoinBoost = false;
             }
             autoCalc();
         }
@@ -247,7 +247,10 @@
                 avgCoins = parseInt(document.getElementById('d-avg').value)||0;
                 playCnt = parseInt(document.getElementById('d-count').value)||0;
             }
-            const itemLabel = selectedItems.length > 0 ? selectedItems.join(',') : 'なし';
+
+            // アイテム名を「+」で結合
+            const itemLabel = selectedItems.length > 0 ? selectedItems.join('+') : 'なし';
+
             const imgF = document.getElementById('t-img').files[0];
             const save = (imgD) => {
                 const d = JSON.parse(localStorage.getItem('tsumData') || '[]');
