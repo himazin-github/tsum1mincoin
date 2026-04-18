@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ツムツム効率計算ツール | Ver 1.3.1</title>
+    <title>ツムツム効率計算ツール | Ver 1.3.3</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700&display=swap" rel="stylesheet">
@@ -54,10 +54,17 @@
         table { width: 100%; border-collapse: collapse; background: white; border: 2px solid var(--tsum-brown); table-layout: fixed; }
         th, td { border: 1px solid #ddd; padding: 6px 1px; text-align: center; font-size: 9px; font-weight: bold; word-break: break-all; }
         th { background: var(--tsum-yellow); color: var(--tsum-brown); border-bottom: 2px solid var(--tsum-brown); }
-        .tsum-thumb { width: 35px; height: 35px; object-fit: cover; display: block; margin: auto; border-radius: 5px; border: 1px solid #eee; }
-        .op-container { display: flex; justify-content: center; gap: 2px; margin-top: 5px; }
-        .op-btn { padding: 4px 6px; border: 1px solid #ccc; border-radius: 4px; background: #fff; font-size: 10px; cursor: pointer; width: auto; }
-        .delete-btn { background: #ffebee; color: #d32f2f; border: 1px solid #ffcdd2; }
+        
+        /* ✕ボタンを画像の上に配置 */
+        .thumb-container { position: relative; width: 35px; height: 35px; margin: auto; }
+        .tsum-thumb { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 5px; border: 1px solid #eee; }
+        .delete-btn-overlay { 
+            position: absolute; top: -5px; right: -5px; 
+            width: 16px; height: 16px; background: rgba(231, 76, 60, 0.9); 
+            color: white; border: 1px solid white; border-radius: 50%; 
+            font-size: 9px; line-height: 14px; text-align: center; 
+            cursor: pointer; font-weight: bold; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
     </style>
 </head>
 <body>
@@ -66,7 +73,7 @@
 
     <div class="main-container">
         <div class="version-tag">
-            Ver 1.3.1 | Code By Gemini | 
+            Ver 1.3.3 | Code By Gemini | 
             <a href="https://x.com/doriantsumtsum" target="_blank" rel="noopener noreferrer">𝕏 @doriantsumtsum</a>
         </div>
         <div class="calc-header">平均効率: <span id="calc-result">0</span> 枚/分</div>
@@ -221,13 +228,21 @@
             const data = JSON.parse(localStorage.getItem('tsumData') || '[]');
             data.forEach((d, i) => {
                 const row = tableBody.insertRow();
-                row.innerHTML = `<td>${i+1}</td><td><img src="${d.imgData||''}" class="tsum-thumb"></td><td style="text-align:left; padding:2px;">${d.name}<br><div class="op-container"><button class="op-btn" onclick="moveItem(${i},-1)">▲</button><button class="op-btn" onclick="moveItem(${i},1)">▼</button><button class="op-btn delete-btn" onclick="deleteItem(${i})">✕</button></div></td><td>${d.sl}</td><td>${d.item}</td><td>${d.playCnt}</td><td style="font-weight:bold">${d.eff.toLocaleString()}</td><td style="color:#00a0e9;">${d.avgCoins.toLocaleString()}</td>`;
+                row.innerHTML = `
+                    <td>${i+1}</td>
+                    <td>
+                        <div class="thumb-container">
+                            <img src="${d.imgData||''}" class="tsum-thumb">
+                            <div class="delete-btn-overlay" onclick="deleteItem(${i})">✕</div>
+                        </div>
+                    </td>
+                    <td style="text-align:left; padding:2px;">${d.name}</td>
+                    <td>${d.sl}</td>
+                    <td>${d.item}</td>
+                    <td>${d.playCnt}</td>
+                    <td style="font-weight:bold">${d.eff.toLocaleString()}</td>
+                    <td style="color:#00a0e9;">${d.avgCoins.toLocaleString()}</td>`;
             });
-        }
-
-        function moveItem(i, dir) {
-            const d = JSON.parse(localStorage.getItem('tsumData') || '[]');
-            if (i+dir >= 0 && i+dir < d.length) { [d[i], d[i+dir]] = [d[i+dir], d[i]]; localStorage.setItem('tsumData', JSON.stringify(d)); renderTable(); }
         }
 
         function deleteItem(i) {
@@ -248,7 +263,6 @@
                 playCnt = parseInt(document.getElementById('d-count').value)||0;
             }
 
-            // アイテム名を「+」で結合
             const itemLabel = selectedItems.length > 0 ? selectedItems.join('+') : 'なし';
 
             const imgF = document.getElementById('t-img').files[0];
@@ -273,11 +287,11 @@
         });
 
         document.getElementById('download-btn').addEventListener('click', () => {
-            const ops = document.querySelectorAll('.op-container');
-            ops.forEach(el => el.style.display = 'none');
+            const delBtns = document.querySelectorAll('.delete-btn-overlay');
+            delBtns.forEach(el => el.style.display = 'none');
             html2canvas(document.getElementById('capture-area')).then(c => {
                 const a = document.createElement('a'); a.href = c.toDataURL(); a.download = 'tsum-table.png'; a.click();
-                ops.forEach(el => el.style.display = 'flex');
+                delBtns.forEach(el => el.style.display = 'block');
             });
         });
 
