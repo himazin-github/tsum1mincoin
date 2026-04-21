@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ツムツム効率計算ツール | Ver 1.3.3</title>
+    <title>ツムツム効率計算ツール | Ver 1.3.5</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700&display=swap" rel="stylesheet">
@@ -11,9 +11,14 @@
         :root { --tsum-yellow: #ffcf00; --tsum-brown: #5d4037; --bg-color: #fff9c4; --tsum-blue: #4a90e2; }
         body { font-family: "FOT-ハミング Std E", "Humming Std E", "M PLUS Rounded 1c", sans-serif; background: var(--bg-color); color: var(--tsum-brown); margin: 0; padding: 5px; display: flex; flex-direction: column; align-items: center; -webkit-font-smoothing: antialiased; }
         h1 { font-size: 18px; margin: 10px 0; color: var(--tsum-brown); }
-        .version-tag { font-size: 10px; color: #8d6e63; margin-bottom: 2px; align-self: flex-start; padding-left: 5px; display: flex; align-items: center; gap: 5px; }
+        .version-tag { font-size: 10px; color: #8d6e63; margin-bottom: 2px; align-self: flex-start; padding-left: 5px; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
         .version-tag a { color: #8d6e63; text-decoration: none; font-weight: bold; }
         .version-tag a:hover { text-decoration: underline; }
+
+        /* Language toggle */
+        .lang-toggle { display: flex; align-items: center; gap: 3px; background: #fff; border: 2px solid var(--tsum-brown); border-radius: 20px; padding: 2px 4px; }
+        .lang-btn { background: none; border: none; padding: 2px 8px; border-radius: 15px; font-size: 11px; font-weight: bold; cursor: pointer; color: #aaa; margin: 0; width: auto; }
+        .lang-btn.active { background: var(--tsum-yellow); color: var(--tsum-brown); }
 
         .main-container { width: 100%; max-width: 450px; background: white; border-radius: 15px; padding: 10px; box-sizing: border-box; }
         .calc-header { background: var(--tsum-yellow); padding: 8px; border-radius: 10px; text-align: center; margin-bottom: 8px; font-weight: bold; border: 2px solid var(--tsum-brown); }
@@ -55,7 +60,6 @@
         th, td { border: 1px solid #ddd; padding: 6px 1px; text-align: center; font-size: 9px; font-weight: bold; word-break: break-all; }
         th { background: var(--tsum-yellow); color: var(--tsum-brown); border-bottom: 2px solid var(--tsum-brown); }
         
-        /* ✕ボタンを画像の上に配置 */
         .thumb-container { position: relative; width: 35px; height: 35px; margin: auto; }
         .tsum-thumb { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 5px; border: 1px solid #eee; }
         .delete-btn-overlay { 
@@ -69,14 +73,18 @@
 </head>
 <body>
 
-    <h1>ツムツム効率計算ツール</h1>
+    <h1 id="app-title">ツムツム効率計算ツール</h1>
 
     <div class="main-container">
         <div class="version-tag">
-            Ver 1.3.3 | Code By Gemini | 
+            Ver 1.3.5 | Code By Gemini | 
             <a href="https://x.com/doriantsumtsum" target="_blank" rel="noopener noreferrer">𝕏 @doriantsumtsum</a>
+            <div class="lang-toggle">
+                <button class="lang-btn active" onclick="setLang('ja')">JP</button>
+                <button class="lang-btn" onclick="setLang('en')">EN</button>
+            </div>
         </div>
-        <div class="calc-header">平均効率: <span id="calc-result">0</span> 枚/分</div>
+        <div class="calc-header"><span id="lbl-avg-eff">平均効率</span>: <span id="calc-result">0</span> <span id="lbl-unit">枚/分</span></div>
 
         <div class="item-selection-grid">
             <div class="item-node" onclick="toggleItem(this, 500, 'coin')"><span>coin</span><small>500</small></div>
@@ -87,35 +95,35 @@
 
         <div class="input-card">
             <div class="mode-switch">
-                <button class="mode-btn active" id="mode-calc" onclick="setMode('calc')">計算モード</button>
-                <button class="mode-btn" id="mode-direct" onclick="setMode('direct')">直接入力</button>
+                <button class="mode-btn active" id="mode-calc" onclick="setMode('calc')" data-jp="計算モード" data-en="Calc Mode">計算モード</button>
+                <button class="mode-btn" id="mode-direct" onclick="setMode('direct')" data-jp="直接入力" data-en="Direct Input">直接入力</button>
             </div>
             
             <div id="calc-form">
                 <div class="play-selector">
-                    <label style="font-size:12px;">回数設定</label>
+                    <label id="lbl-play-count" style="font-size:12px;">回数設定</label>
                     <select id="play-count-selector" onchange="generateEntryRows()"></select>
                 </div>
                 <div id="entries-container"></div>
             </div>
 
             <div id="direct-form" style="display:none; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
-                <div style="flex:1"><label style="font-size:11px">効率</label><input type="number" id="d-eff" inputmode="numeric"></div>
-                <div style="flex:1"><label style="font-size:11px">平均</label><input type="number" id="d-avg" inputmode="numeric"></div>
-                <div style="flex:1"><label style="font-size:11px">回数</label><input type="number" id="d-count" inputmode="numeric"></div>
+                <div style="flex:1"><label id="lbl-d-eff" style="font-size:11px">効率</label><input type="number" id="d-eff" inputmode="numeric"></div>
+                <div style="flex:1"><label id="lbl-d-avg" style="font-size:11px">平均</label><input type="number" id="d-avg" inputmode="numeric"></div>
+                <div style="flex:1"><label id="lbl-d-count" style="font-size:11px">回数</label><input type="number" id="d-count" inputmode="numeric"></div>
             </div>
 
-            <div class="info-row"><label>ツム画像</label><input type="file" id="t-img" accept="image/*"></div>
-            <div class="info-row"><label>ツム名</label><input type="text" id="t-name"></div>
-            <div class="info-row"><label>SL</label>
+            <div class="info-row"><label id="lbl-img">ツム画像</label><input type="file" id="t-img" accept="image/*"></div>
+            <div class="info-row"><label id="lbl-name">ツム名</label><input type="text" id="t-name"></div>
+            <div class="info-row"><label id="lbl-sl">SL</label>
                 <select id="t-skill"><option>6</option><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option></select>
             </div>
-            <button id="add-btn">リストに保存</button>
-            <button id="sort-btn">効率順に並び替え</button>
-            <button id="download-btn">画像で保存</button>
+            <button id="add-btn" data-jp="リストに保存" data-en="Save to List">リストに保存</button>
+            <button id="sort-btn" data-jp="効率順に並び替え" data-en="Sort by Efficiency">効率順に並び替え</button>
+            <button id="download-btn" data-jp="画像で保存" data-en="Save as Image">画像で保存</button>
             <div class="extra-btns">
-                <button id="excel-btn">HTML保存</button>
-                <button id="clear-btn">データ全消去</button>
+                <button id="excel-btn" data-jp="HTML保存" data-en="Save HTML" style="flex:1; padding:8px; font-size:12px;">HTML保存</button>
+                <button id="clear-btn" data-jp="データ全消去" data-en="Clear All" style="flex:1; padding:8px; font-size:12px;">データ全消去</button>
             </div>
         </div>
 
@@ -123,7 +131,16 @@
             <div id="capture-area">
                 <table id="targetTable">
                     <thead>
-                        <tr><th style="width:15px">No</th><th style="width:40px">画像</th><th>ツム名</th><th style="width:18px">SL</th><th style="width:55px">ITEM</th><th style="width:25px">回</th><th style="width:48px">枚/分</th><th style="width:48px">平均</th></tr>
+                        <tr>
+                            <th style="width:15px">No</th>
+                            <th style="width:40px" id="th-img">画像</th>
+                            <th id="th-name">ツム名</th>
+                            <th style="width:18px">SL</th>
+                            <th style="width:55px">ITEM</th>
+                            <th style="width:25px" id="th-plays">回</th>
+                            <th style="width:48px" id="th-eff">枚/分</th>
+                            <th style="width:48px" id="th-avg">平均</th>
+                        </tr>
                     </thead>
                     <tbody></tbody>
                 </table>
@@ -133,17 +150,135 @@
 
     <script>
         let currentMode = 'calc';
+        let currentLang = 'ja';
         let timerInterval = null;
         let activeTimerIdx = -1;
         let selectedItems = [];
         let totalCost = 0;
         let isCoinBoost = false;
 
+        // ---- Translation dictionary ----
+        const LANG = {
+            ja: {
+                title: 'ツムツム効率計算ツール',
+                avgEff: '平均効率',
+                unit: '枚/分',
+                playCount: '回数設定',
+                timerStart: '開始',
+                timerStop: '停止',
+                coinPlaceholder: '枚数',
+                dEff: '効率',
+                dAvg: '平均',
+                dCount: '回数',
+                img: 'ツム画像',
+                name: 'ツム名',
+                sl: 'SL',
+                addBtn: 'リストに保存',
+                sortBtn: '効率順に並び替え',
+                downloadBtn: '画像で保存',
+                excelBtn: 'HTML保存',
+                clearBtn: 'データ全消去',
+                thImg: '画像',
+                thName: 'ツム名',
+                thPlays: '回',
+                thEff: '枚/分',
+                thAvg: '平均',
+                alertNoData: 'データを入れてください',
+                confirmDelete: '削除する？',
+                confirmClear: '全消去しますか？',
+                alertNoRows: 'データがありません',
+                playsUnit: '回',
+                modeCalc: '計算モード',
+                modeDirect: '直接入力',
+            },
+            en: {
+                title: 'Tsum Efficiency Calculator',
+                avgEff: 'Avg Efficiency',
+                unit: 'coins/min',
+                playCount: 'Plays',
+                timerStart: 'Start',
+                timerStop: 'Stop',
+                coinPlaceholder: 'Coins',
+                dEff: 'Eff.',
+                dAvg: 'Avg',
+                dCount: 'Plays',
+                img: 'Tsum Image',
+                name: 'Tsum Name',
+                sl: 'SL',
+                addBtn: 'Save to List',
+                sortBtn: 'Sort by Efficiency',
+                downloadBtn: 'Save as Image',
+                excelBtn: 'Save HTML',
+                clearBtn: 'Clear All',
+                thImg: 'Img',
+                thName: 'Name',
+                thPlays: 'Plays',
+                thEff: 'coins/m',
+                thAvg: 'Avg',
+                alertNoData: 'Please enter data first.',
+                confirmDelete: 'Delete this entry?',
+                confirmClear: 'Clear all data?',
+                alertNoRows: 'No data available.',
+                playsUnit: ' plays',
+                modeCalc: 'Calc Mode',
+                modeDirect: 'Direct Input',
+            }
+        };
+
+        function t(key) {
+            return LANG[currentLang][key] || key;
+        }
+
+        function setLang(lang) {
+            currentLang = lang;
+            document.documentElement.lang = lang;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`.lang-btn[onclick="setLang('${lang}')"]`).classList.add('active');
+            applyLang();
+        }
+
+        function applyLang() {
+            const L = t;
+            document.getElementById('app-title').textContent = L('title');
+            document.getElementById('lbl-avg-eff').textContent = L('avgEff');
+            document.getElementById('lbl-unit').textContent = L('unit');
+            document.getElementById('lbl-play-count').textContent = L('playCount');
+            document.getElementById('lbl-d-eff').textContent = L('dEff');
+            document.getElementById('lbl-d-avg').textContent = L('dAvg');
+            document.getElementById('lbl-d-count').textContent = L('dCount');
+            document.getElementById('lbl-img').textContent = L('img');
+            document.getElementById('lbl-name').textContent = L('name');
+            document.getElementById('lbl-sl').textContent = L('sl');
+            document.getElementById('add-btn').textContent = L('addBtn');
+            document.getElementById('sort-btn').textContent = L('sortBtn');
+            document.getElementById('download-btn').textContent = L('downloadBtn');
+            document.getElementById('excel-btn').textContent = L('excelBtn');
+            document.getElementById('clear-btn').textContent = L('clearBtn');
+            document.getElementById('th-img').textContent = L('thImg');
+            document.getElementById('th-name').textContent = L('thName');
+            document.getElementById('th-plays').textContent = L('thPlays');
+            document.getElementById('th-eff').textContent = L('thEff');
+            document.getElementById('th-avg').textContent = L('thAvg');
+            document.getElementById('mode-calc').textContent = L('modeCalc');
+            document.getElementById('mode-direct').textContent = L('modeDirect');
+
+            // Update timer buttons and placeholders in existing entry rows
+            document.querySelectorAll('.timer-btn').forEach(btn => {
+                btn.textContent = btn.classList.contains('active') ? L('timerStop') : L('timerStart');
+            });
+            document.querySelectorAll('.c-coin').forEach(input => {
+                input.placeholder = L('coinPlaceholder');
+            });
+
+            generateEntryRows();
+            renderTable();
+        }
+
         const playCountSel = document.getElementById('play-count-selector');
         const entriesContainer = document.getElementById('entries-container');
         const tableBody = document.querySelector('#targetTable tbody');
 
-        for(let i=1; i<=30; i++) playCountSel.add(new Option(i + "回", i));
+        for(let i=1; i<=30; i++) playCountSel.add(new Option(i + (currentLang === 'ja' ? '回' : ' plays'), i));
         playCountSel.value = 5;
 
         function toggleItem(el, cost, name) {
@@ -169,12 +304,21 @@
         }
 
         function generateEntryRows() {
+            if (activeTimerIdx !== -1) {
+                clearInterval(timerInterval);
+                activeTimerIdx = -1;
+            }
             const count = parseInt(playCountSel.value);
             entriesContainer.innerHTML = "";
             for(let i=0; i<count; i++) {
                 const row = document.createElement('div');
                 row.className = "entry-row";
-                row.innerHTML = `<div class="entry-num">${i+1}</div><input type="number" class="c-coin" placeholder="枚数" oninput="autoCalc()" style="flex:1;" inputmode="numeric"><select class="c-min" onchange="autoCalc()" style="flex:0.6;">${genOptions(15, 2)}分</select><select class="c-sec" onchange="autoCalc()" style="flex:0.6;">${genOptions(59, 30)}秒</select><button class="timer-btn" onclick="toggleTimer(${i})">開始</button>`;
+                row.innerHTML = `
+                    <div class="entry-num">${i+1}</div>
+                    <input type="number" class="c-coin" placeholder="${t('coinPlaceholder')}" oninput="autoCalc()" style="flex:1;" inputmode="numeric">
+                    <select class="c-min" onchange="autoCalc()" style="flex:0.6;">${genOptions(15, 2)}</select>
+                    <select class="c-sec" onchange="autoCalc()" style="flex:0.6;">${genOptions(59, 30)}</select>
+                    <button class="timer-btn" onclick="toggleTimer(${i})">${t('timerStart')}</button>`;
                 entriesContainer.appendChild(row);
             }
             autoCalc();
@@ -192,33 +336,36 @@
             const secSel = document.querySelectorAll('.c-sec')[idx];
             if (activeTimerIdx === idx) {
                 clearInterval(timerInterval);
-                btn.innerText = "開始"; btn.classList.remove('active'); activeTimerIdx = -1;
+                btn.innerText = t('timerStart'); btn.classList.remove('active'); activeTimerIdx = -1;
                 autoCalc();
             } else {
                 if (activeTimerIdx !== -1) toggleTimer(activeTimerIdx);
                 activeTimerIdx = idx;
                 let start = Date.now();
-                btn.innerText = "停止"; btn.classList.add('active');
+                btn.innerText = t('timerStop'); btn.classList.add('active');
                 timerInterval = setInterval(() => {
                     let s = Math.floor((Date.now() - start) / 1000);
                     minSel.value = Math.floor(s / 60); secSel.value = s % 60;
+                    autoCalc();
                 }, 1000);
             }
         }
 
         function autoCalc() {
-            const coins = document.querySelectorAll('.c-coin'), mins = document.querySelectorAll('.c-min'), secs = document.querySelectorAll('.c-sec');
-            let p=0, t=0, c=0;
+            const coins = document.querySelectorAll('.c-coin');
+            const mins = document.querySelectorAll('.c-min');
+            const secs = document.querySelectorAll('.c-sec');
+            let p=0, tt=0, c=0;
             coins.forEach((input, i) => { 
                 if(input.value) { 
                     let raw = parseFloat(input.value);
                     let earned = isCoinBoost ? (raw * 1.3) : raw;
                     p += (earned - totalCost);
-                    t += (parseInt(mins[i].value) * 60) + parseInt(secs[i].value);
+                    tt += (parseInt(mins[i].value) * 60) + parseInt(secs[i].value);
                     c++; 
                 } 
             });
-            let eff = (c > 0 && t > 0) ? Math.round(p / t * 60) : 0;
+            let eff = (c > 0 && tt > 0) ? Math.round(p / tt * 60) : 0;
             document.getElementById('calc-result').innerText = eff.toLocaleString();
             return { eff, cnt: c };
         }
@@ -246,24 +393,30 @@
         }
 
         function deleteItem(i) {
-            if(confirm("削除する？")) { const d = JSON.parse(localStorage.getItem('tsumData') || '[]'); d.splice(i, 1); localStorage.setItem('tsumData', JSON.stringify(d)); renderTable(); }
+            if(confirm(t('confirmDelete'))) {
+                const d = JSON.parse(localStorage.getItem('tsumData') || '[]');
+                d.splice(i, 1);
+                localStorage.setItem('tsumData', JSON.stringify(d));
+                renderTable();
+            }
         }
 
         document.getElementById('add-btn').addEventListener('click', () => {
             let eff, avgCoins, playCnt;
             if(currentMode === 'calc') {
                 const res = autoCalc();
-                if(!res || res.cnt === 0) return alert("データを入れてください");
+                if(!res || res.cnt === 0) return alert(t('alertNoData'));
                 eff = res.eff; playCnt = res.cnt;
-                let t = 0; document.querySelectorAll('.c-coin').forEach(i => t += (parseFloat(i.value)||0));
-                avgCoins = Math.round(t / playCnt);
+                let total = 0;
+                document.querySelectorAll('.c-coin').forEach(inp => total += (parseFloat(inp.value)||0));
+                avgCoins = Math.round(total / playCnt);
             } else {
                 eff = parseInt(document.getElementById('d-eff').value)||0;
                 avgCoins = parseInt(document.getElementById('d-avg').value)||0;
                 playCnt = parseInt(document.getElementById('d-count').value)||0;
             }
 
-            const itemLabel = selectedItems.length > 0 ? selectedItems.join('+') : 'なし';
+            const itemLabel = selectedItems.length > 0 ? selectedItems.join('+') : (currentLang === 'ja' ? 'なし' : 'none');
 
             const imgF = document.getElementById('t-img').files[0];
             const save = (imgD) => {
@@ -297,20 +450,26 @@
 
         document.getElementById('excel-btn').addEventListener('click', () => {
             const d = JSON.parse(localStorage.getItem('tsumData') || '[]');
-            if(!d.length) return alert("データがありません");
-            let html = `<html><head><meta charset="utf-8"><style>table{border-collapse:collapse;width:100%;font-family:sans-serif;}th,td{border:1px solid #ccc;padding:8px;text-align:center;}th{background:#ffcf00;}img{width:64px;height:64px;object-fit:cover;border-radius:5px;}</style></head><body><h2>ツムツム効率データ</h2><table border="1"><tr><th>No</th><th>画像</th><th>名</th><th>SL</th><th>ITEM</th><th>回数</th><th>効率</th><th>平均</th></tr>${d.map((val, i) => `<tr><td>${i+1}</td><td>${val.imgData ? `<img src="${val.imgData}">` : 'なし'}</td><td>${val.name}</td><td>${val.sl}</td><td>${val.item}</td><td>${val.playCnt}</td><td>${val.eff.toLocaleString()}</td><td>${val.avgCoins.toLocaleString()}</td></tr>`).join('')}</table></body></html>`;
+            if(!d.length) return alert(t('alertNoRows'));
+            let html = `<html><head><meta charset="utf-8"><style>table{border-collapse:collapse;width:100%;font-family:sans-serif;}th,td{border:1px solid #ccc;padding:8px;text-align:center;}th{background:#ffcf00;}img{width:64px;height:64px;object-fit:cover;border-radius:5px;}</style></head><body><h2>${t('title')}</h2><table border="1"><tr><th>No</th><th>${t('thImg')}</th><th>${t('thName')}</th><th>SL</th><th>ITEM</th><th>${t('thPlays')}</th><th>${t('thEff')}</th><th>${t('thAvg')}</th></tr>${d.map((val, i) => `<tr><td>${i+1}</td><td>${val.imgData ? `<img src="${val.imgData}">` : '-'}</td><td>${val.name}</td><td>${val.sl}</td><td>${val.item}</td><td>${val.playCnt}</td><td>${val.eff.toLocaleString()}</td><td>${val.avgCoins.toLocaleString()}</td></tr>`).join('')}</table></body></html>`;
             const blob = new Blob([html], {type:'text/html'});
-            const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download="ツム効率データ.html"; link.click();
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = currentLang === 'ja' ? "ツム効率データ.html" : "tsum-efficiency.html";
+            link.click();
         });
 
-        document.getElementById('clear-btn').addEventListener('click', () => { if(confirm("全消去しますか？")) { localStorage.removeItem('tsumData'); renderTable(); } });
+        document.getElementById('clear-btn').addEventListener('click', () => {
+            if(confirm(t('confirmClear'))) { localStorage.removeItem('tsumData'); renderTable(); }
+        });
+
         document.getElementById('sort-btn').addEventListener('click', () => {
             const d = JSON.parse(localStorage.getItem('tsumData') || '[]');
             d.sort((a,b) => b.eff - a.eff); localStorage.setItem('tsumData', JSON.stringify(d)); renderTable();
         });
 
-        generateEntryRows(); renderTable();
+        generateEntryRows();
+        renderTable();
     </script>
 </body>
 </html>
-
